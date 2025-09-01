@@ -1,15 +1,15 @@
 import { NextResponse } from 'next/server';
-import dbConnect from '@/lib/mongodb';
-import { Competition } from '@/lib/models/Competition';
+import { mockCompetitions } from '@/lib/mock-data';
 
 export async function GET(
   request: Request,
   { params }: { params: { slug: string } }
 ) {
   try {
-    await dbConnect();
+    // Simuler un délai de réseau
+    await new Promise(resolve => setTimeout(resolve, 300));
 
-    const competition = await Competition.findOne({ slug: params.slug });
+    const competition = mockCompetitions.find(c => c.slug === params.slug);
     
     if (!competition) {
       return NextResponse.json(

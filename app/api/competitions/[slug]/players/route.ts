@@ -1,17 +1,15 @@
 import { NextResponse } from 'next/server';
-import dbConnect from '@/lib/mongodb';
-import { Competition } from '@/lib/models/Competition';
-import { Player } from '@/lib/models/Player';
+import { mockCompetitions, mockPlayers } from '@/lib/mock-data';
 
 export async function GET(
   request: Request,
   { params }: { params: { slug: string } }
 ) {
   try {
-    await dbConnect();
+    // Simuler un délai de réseau
+    await new Promise(resolve => setTimeout(resolve, 400));
 
-    // Vérifier que la compétition existe
-    const competition = await Competition.findOne({ slug: params.slug });
+    const competition = mockCompetitions.find(c => c.slug === params.slug);
     if (!competition) {
       return NextResponse.json(
         { error: 'Compétition non trouvée' },
@@ -19,10 +17,9 @@ export async function GET(
       );
     }
 
-    // Récupérer les joueurs
-    const players = await Player.find({ competitionId: competition._id })
-      .select('slug firstName lastName age team position bio photoUrl votesConfirmed')
-      .sort({ votesConfirmed: -1 });
+    const players = mockPlayers
+      .filter(p => p.competitionId === competition._id)
+      .sort((a, b) => b.votesConfirmed - a.votesConfirmed);
 
     return NextResponse.json(players);
     
