@@ -5,9 +5,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Vote, CreditCard, Smartphone, Mail } from 'lucide-react';
+import { Vote, CreditCard, Smartphone } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useRouter } from 'next/navigation';
 
 interface Player {
   _id: string;
@@ -33,12 +32,15 @@ interface VoteModalProps {
 }
 
 export function VoteModal({ open, onOpenChange, player, competition, onSuccess }: VoteModalProps) {
-  const router = useRouter();
   const [customerPhone, setCustomerPhone] = useState('');
-  const [customerEmail, setCustomerEmail] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleVote = async () => {
+    if (!customerPhone.trim()) {
+      alert('Veuillez saisir votre numéro de téléphone');
+      return;
+    }
+
     setLoading(true);
     
     try {
@@ -48,8 +50,7 @@ export function VoteModal({ open, onOpenChange, player, competition, onSuccess }
         body: JSON.stringify({
           competitionSlug: competition.slug,
           playerSlug: player.slug,
-          customerPhone: customerPhone || undefined,
-          customerEmail: customerEmail || undefined
+          customerPhone: customerPhone.trim()
         })
       });
 
@@ -59,7 +60,7 @@ export function VoteModal({ open, onOpenChange, player, competition, onSuccess }
 
       const data = await response.json();
       
-      // Rediriger vers Wave Business
+      // Rediriger vers Wave Business avec le numéro de téléphone
       window.location.href = data.checkoutUrl;
       
     } catch (error) {
@@ -70,6 +71,23 @@ export function VoteModal({ open, onOpenChange, player, competition, onSuccess }
     }
   };
 
+  const formatPhoneNumber = (value: string) => {
+    // Nettoyer et formater le numéro sénégalais
+    const cleaned = value.replace(/\D/g, '');
+    if (cleaned.startsWith('221')) {
+      return cleaned;
+    }
+    if (cleaned.startsWith('7') || cleaned.startsWith('3')) {
+      return '221' + cleaned;
+    }
+    return cleaned;
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhoneNumber(e.target.value);
+    setCustomerPhone(formatted);
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md rounded-2xl">
@@ -78,7 +96,7 @@ export function VoteModal({ open, onOpenChange, player, competition, onSuccess }
             Voter pour {player.firstName} {player.lastName}
           </DialogTitle>
           <DialogDescription className="text-center">
-            Compétition : {competition.name}
+            {competition.name}
           </DialogDescription>
         </DialogHeader>
 
@@ -113,41 +131,26 @@ export function VoteModal({ open, onOpenChange, player, competition, onSuccess }
             </div>
           </div>
 
-          {/* Contact Info (Optional) */}
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="phone" className="text-sm font-medium">
-                Numéro de téléphone (optionnel)
-              </Label>
-              <div className="relative mt-1">
-                <Smartphone className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-                <Input
-                  id="phone"
-                  type="tel"
-                  placeholder="77 123 45 67"
-                  value={customerPhone}
-                  onChange={(e) => setCustomerPhone(e.target.value)}
-                  className="pl-10 rounded-xl"
-                />
-              </div>
+          {/* Phone Input */}
+          <div className="space-y-2">
+            <Label htmlFor="phone" className="text-sm font-medium">
+              Numéro de téléphone Wave <span className="text-red-500">*</span>
+            </Label>
+            <div className="relative">
+              <Smartphone className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+              <Input
+                id="phone"
+                type="tel"
+                placeholder="77 123 45 67"
+                value={customerPhone}
+                onChange={handlePhoneChange}
+                className="pl-10 rounded-xl"
+                required
+              />
             </div>
-
-            <div>
-              <Label htmlFor="email" className="text-sm font-medium">
-                Email (optionnel)
-              </Label>
-              <div className="relative mt-1">
-                <Mail className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="votre@email.com"
-                  value={customerEmail}
-                  onChange={(e) => setCustomerEmail(e.target.value)}
-                  className="pl-10 rounded-xl"
-                />
-              </div>
-            </div>
+            <p className="text-xs text-gray-500">
+              Numéro associé à votre compte Wave pour le paiement
+            </p>
           </div>
 
           {/* Actions */}
@@ -162,7 +165,7 @@ export function VoteModal({ open, onOpenChange, player, competition, onSuccess }
             </Button>
             <Button
               onClick={handleVote}
-              disabled={loading}
+              disabled={loading || !customerPhone.trim()}
               className="flex-1 bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-lg hover:shadow-xl"
             >
               {loading ? (
@@ -179,7 +182,7 @@ export function VoteModal({ open, onOpenChange, player, competition, onSuccess }
           </div>
           
           <div className="text-xs text-gray-500 text-center">
-            Vous serez redirigé vers Wave Business pour finaliser le paiement
+            Vous serez redirigé vers l'application Wave pour confirmer le paiement
           </div>
         </div>
       </DialogContent>

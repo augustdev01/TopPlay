@@ -5,7 +5,13 @@ import { Competition } from '@/lib/models/Competition';
 import { Player } from '@/lib/models/Player';
 import { signState } from '@/lib/auth/jwt';
 import { buildWaveCheckoutUrl } from '@/lib/wave/payment';
-import { voteSchema } from '@/lib/validations/schemas';
+import { z } from 'zod';
+
+const voteSchema = z.object({
+  competitionSlug: z.string().min(1),
+  playerSlug: z.string().min(1),
+  customerPhone: z.string().min(8, 'Numéro de téléphone requis')
+});
 
 export async function POST(request: Request) {
   try {
@@ -19,7 +25,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { competitionSlug, playerSlug, customerPhone, customerEmail } = validation.data;
+    const { competitionSlug, playerSlug, customerPhone } = validation.data;
 
     await dbConnect();
 
@@ -58,7 +64,6 @@ export async function POST(request: Request) {
       amount: competition.votePrice,
       status: 'pending',
       customerPhone,
-      customerEmail,
       stateToken: '', // sera rempli après
       checkoutUrl: '' // sera rempli après
     });
@@ -73,7 +78,7 @@ export async function POST(request: Request) {
       amount: competition.votePrice
     });
 
-    // Construire l'URL Wave
+    // Construire l'URL Wave avec le numéro de téléphone
     const redirectUrl = `${process.env.APP_BASE_URL}/paiement/retour`;
     const callbackUrl = `${process.env.APP_BASE_URL}/api/payments/wave/callback`;
     
@@ -83,7 +88,8 @@ export async function POST(request: Request) {
       description: `Vote pour ${player.firstName} ${player.lastName} - ${competition.name}`,
       state: stateToken,
       redirectUrl,
-      callbackUrl
+      callbackUrl,
+      customerPhone // Pré-remplir le numéro dans Wave
     });
 
     // Mettre à jour l'order avec les URLs
@@ -91,7 +97,7 @@ export async function POST(request: Request) {
     order.checkoutUrl = checkoutUrl;
     await order.save();
 
-    // Incrémenter votesPending pour le monitoring (optionnel)
+    // Incrémenter votesPending pour le monitoring
     await Player.findByIdAndUpdate(player._id, {
       $inc: { votesPending: 1 }
     });

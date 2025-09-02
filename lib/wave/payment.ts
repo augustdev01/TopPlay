@@ -7,6 +7,7 @@ export interface WavePaymentParams {
   state: string;
   redirectUrl: string;
   callbackUrl?: string;
+  customerPhone?: string;
 }
 
 export interface WaveTransactionStatus {
@@ -31,6 +32,11 @@ export function buildWaveCheckoutUrl(params: WavePaymentParams): string {
     error_url: params.redirectUrl,
     cancel_url: params.redirectUrl,
   });
+
+  // Ajouter le numéro de téléphone si fourni pour pré-remplir Wave
+  if (params.customerPhone) {
+    waveParams.set('phone', params.customerPhone);
+  }
 
   if (params.callbackUrl) {
     waveParams.set('webhook_url', params.callbackUrl);
@@ -107,6 +113,7 @@ function mapWaveStatus(waveStatus: string): 'pending' | 'success' | 'failed' | '
   }
 }
 
+// Fonction pour vérifier le statut d'une commande via Wave API
 export async function checkOrderStatus(orderId: string): Promise<{
   success: boolean;
   status?: string;
@@ -114,10 +121,7 @@ export async function checkOrderStatus(orderId: string): Promise<{
   error?: string;
 }> {
   try {
-    // Simulation d'une vérification via l'API Wave
-    // En réalité, Wave Business fournirait un moyen de vérifier les paiements
-    // soit via webhook, soit via API de vérification
-    
+    // Vérification via l'API Wave Business
     const response = await fetch(`${process.env.WAVE_BUSINESS_API_URL}/orders/${orderId}/status`, {
       headers: {
         'Authorization': `Bearer ${process.env.WAVE_BUSINESS_API_KEY}`,

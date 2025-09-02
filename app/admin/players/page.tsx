@@ -18,88 +18,37 @@ import {
   Eye
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-
-// Mock data pour la démo
-const mockPlayers = [
-  {
-    _id: '1',
-    slug: 'mamadou-diallo',
-    firstName: 'Mamadou',
-    lastName: 'Diallo',
-    age: 24,
-    team: 'ASC Diaraf',
-    position: 'Attaquant',
-    competition: 'Championnat Demo',
-    competitionSlug: 'championnat-demo',
-    photoUrl: 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg',
-    votesConfirmed: 245,
-    votesPending: 12,
-    revenue: 49000,
-    createdAt: '2024-12-15'
-  },
-  {
-    _id: '2',
-    slug: 'omar-sall',
-    firstName: 'Omar',
-    lastName: 'Sall',
-    age: 26,
-    team: 'Casa Sports',
-    position: 'Milieu',
-    competition: 'Coupe Jeunes',
-    competitionSlug: 'coupe-jeunes',
-    photoUrl: 'https://images.pexels.com/photos/1308885/pexels-photo-1308885.jpeg',
-    votesConfirmed: 178,
-    votesPending: 8,
-    revenue: 35600,
-    createdAt: '2024-12-18'
-  },
-  {
-    _id: '3',
-    slug: 'aminata-sow',
-    firstName: 'Aminata',
-    lastName: 'Sow',
-    age: 22,
-    team: 'Jaraaf Féminin',
-    position: 'Défenseur',
-    competition: 'Tournoi Féminin',
-    competitionSlug: 'tournoi-feminin',
-    photoUrl: 'https://images.pexels.com/photos/1884574/pexels-photo-1884574.jpeg',
-    votesConfirmed: 134,
-    votesPending: 5,
-    revenue: 26800,
-    createdAt: '2024-12-20'
-  },
-  {
-    _id: '4',
-    slug: 'ibrahima-ndiaye',
-    firstName: 'Ibrahima',
-    lastName: 'Ndiaye',
-    age: 28,
-    team: 'ASC Diaraf',
-    position: 'Gardien',
-    competition: 'Ligue Vétérans',
-    competitionSlug: 'ligue-veterans',
-    photoUrl: 'https://images.pexels.com/photos/1040881/pexels-photo-1040881.jpeg',
-    votesConfirmed: 198,
-    votesPending: 3,
-    revenue: 39600,
-    createdAt: '2024-11-28'
-  }
-];
+import Link from 'next/link';
+import { mockPlayers, mockCompetitions } from '@/lib/mock-data';
 
 export default function AdminPlayersPage() {
-  const [players, setPlayers] = useState(mockPlayers);
+  const [players, setPlayers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCompetition, setSelectedCompetition] = useState('');
   const [selectedTeam, setSelectedTeam] = useState('');
 
   useEffect(() => {
-    setTimeout(() => setLoading(false), 800);
+    // Enrichir les données des joueurs avec les infos de compétition
+    const enrichedPlayers = mockPlayers.map(player => {
+      const competition = mockCompetitions.find(c => c._id === player.competitionId);
+      return {
+        ...player,
+        competition: competition?.name || 'Compétition inconnue',
+        competitionSlug: competition?.slug || '',
+        competitionStatus: competition?.status || 'draft',
+        revenue: player.votesConfirmed * (competition?.votePrice || 200)
+      };
+    });
+    
+    setTimeout(() => {
+      setPlayers(enrichedPlayers);
+      setLoading(false);
+    }, 800);
   }, []);
 
   const competitions = [...new Set(players.map(p => p.competition))];
-  const teams = [...new Set(players.map(p => p.team))];
+  const teams = [...new Set(players.map(p => p.team).filter(Boolean))];
 
   const filteredPlayers = players.filter(player => {
     const matchesSearch = `${player.firstName} ${player.lastName}`.toLowerCase().includes(searchTerm.toLowerCase());
@@ -108,6 +57,12 @@ export default function AdminPlayersPage() {
     
     return matchesSearch && matchesCompetition && matchesTeam;
   });
+
+  const handleDelete = (playerId: string) => {
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce joueur ?')) {
+      setPlayers(prev => prev.filter(p => p._id !== playerId));
+    }
+  };
 
   if (loading) {
     return (
@@ -138,9 +93,11 @@ export default function AdminPlayersPage() {
             <h1 className="text-3xl font-bold text-gray-900">Joueurs</h1>
             <p className="text-gray-600 mt-1">Gérez tous les joueurs de la plateforme</p>
           </div>
-          <Button className="bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-lg">
-            <Plus className="w-4 h-4 mr-2" />
-            Nouveau joueur
+          <Button asChild className="bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-lg">
+            <Link href="/admin/players/create">
+              <Plus className="w-4 h-4 mr-2" />
+              Nouveau joueur
+            </Link>
           </Button>
         </div>
       </motion.div>
@@ -159,7 +116,7 @@ export default function AdminPlayersPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="relative">
                 <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
                 <Input
@@ -245,12 +202,19 @@ export default function AdminPlayersPage() {
                         <Badge variant="outline" className="text-xs">
                           {player.age} ans
                         </Badge>
+                        <Badge className={`text-xs ${
+                          player.competitionStatus === 'active' ? 'bg-green-100 text-green-700' :
+                          player.competitionStatus === 'ended' ? 'bg-gray-100 text-gray-700' :
+                          'bg-orange-100 text-orange-700'
+                        }`}>
+                          {player.competitionStatus}
+                        </Badge>
                       </div>
                       
                       <div className="flex items-center space-x-4 text-sm text-gray-600 mb-3">
-                        <span>{player.team}</span>
-                        <span>•</span>
-                        <span>{player.position}</span>
+                        <span>{player.team || 'Équipe non définie'}</span>
+                        {player.team && <span>•</span>}
+                        <span>{player.position || 'Position non définie'}</span>
                         <span>•</span>
                         <span>{player.competition}</span>
                       </div>
@@ -261,7 +225,7 @@ export default function AdminPlayersPage() {
                           <div className="text-xs text-gray-600">Votes confirmés</div>
                         </div>
                         <div className="bg-orange-50 rounded-lg p-2 text-center">
-                          <div className="text-lg font-bold text-orange-600">{player.votesPending}</div>
+                          <div className="text-lg font-bold text-orange-600">{player.votesPending || 0}</div>
                           <div className="text-xs text-gray-600">En attente</div>
                         </div>
                         <div className="bg-indigo-50 rounded-lg p-2 text-center">
@@ -276,15 +240,22 @@ export default function AdminPlayersPage() {
 
                   {/* Actions */}
                   <div className="flex flex-col space-y-2 ml-6">
-                    <Button size="sm" variant="outline" className="rounded-xl">
-                      <Eye className="w-4 h-4 mr-2" />
-                      Voir
+                    <Button asChild size="sm" variant="outline" className="rounded-xl">
+                      <Link href={`/competitions/${player.competitionSlug}/players/${player.slug}`}>
+                        <Eye className="w-4 h-4 mr-2" />
+                        Voir
+                      </Link>
                     </Button>
                     <Button size="sm" variant="outline" className="rounded-xl">
                       <Edit className="w-4 h-4 mr-2" />
                       Modifier
                     </Button>
-                    <Button size="sm" variant="outline" className="rounded-xl text-red-600 hover:text-red-700">
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      onClick={() => handleDelete(player._id)}
+                      className="rounded-xl text-red-600 hover:text-red-700 border-red-200 hover:border-red-300"
+                    >
                       <Trash2 className="w-4 h-4 mr-2" />
                       Supprimer
                     </Button>
@@ -295,6 +266,28 @@ export default function AdminPlayersPage() {
           </motion.div>
         ))}
       </motion.div>
+
+      {filteredPlayers.length === 0 && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-center py-16"
+        >
+          <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-gray-600 mb-2">
+            Aucun joueur trouvé
+          </h3>
+          <p className="text-gray-500 mb-6">
+            {searchTerm ? 'Aucun résultat pour votre recherche' : 'Ajoutez votre premier joueur'}
+          </p>
+          <Button asChild className="bg-indigo-600 hover:bg-indigo-700 rounded-xl">
+            <Link href="/admin/players/create">
+              <Plus className="w-4 h-4 mr-2" />
+              Ajouter un joueur
+            </Link>
+          </Button>
+        </motion.div>
+      )}
     </div>
   );
 }

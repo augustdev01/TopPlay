@@ -19,66 +19,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-
-// Mock data pour la démo
-const mockCompetitions = [
-  {
-    _id: '1',
-    slug: 'championnat-demo',
-    name: 'Championnat de Démonstration',
-    status: 'active' as const,
-    votePrice: 200,
-    startDate: '2025-01-01',
-    endDate: '2025-02-28',
-    description: 'Compétition de démonstration pour tester la plateforme',
-    playersCount: 24,
-    totalVotes: 1247,
-    revenue: 249400,
-    createdAt: '2024-12-15'
-  },
-  {
-    _id: '2',
-    slug: 'coupe-jeunes',
-    name: 'Coupe des Jeunes Talents',
-    status: 'active' as const,
-    votePrice: 200,
-    startDate: '2025-01-15',
-    endDate: '2025-03-15',
-    description: 'Compétition dédiée aux jeunes talents de moins de 21 ans',
-    playersCount: 32,
-    totalVotes: 892,
-    revenue: 178400,
-    createdAt: '2024-12-20'
-  },
-  {
-    _id: '3',
-    slug: 'ligue-veterans',
-    name: 'Ligue des Vétérans',
-    status: 'ended' as const,
-    votePrice: 200,
-    startDate: '2024-11-01',
-    endDate: '2024-12-31',
-    description: 'Compétition pour les joueurs expérimentés de plus de 30 ans',
-    playersCount: 18,
-    totalVotes: 2156,
-    revenue: 431200,
-    createdAt: '2024-10-25'
-  },
-  {
-    _id: '4',
-    slug: 'tournoi-feminin',
-    name: 'Tournoi Féminin National',
-    status: 'draft' as const,
-    votePrice: 200,
-    startDate: '2025-02-01',
-    endDate: '2025-04-30',
-    description: 'Premier tournoi national féminin de football',
-    playersCount: 28,
-    totalVotes: 0,
-    revenue: 0,
-    createdAt: '2025-01-10'
-  }
-];
+import { mockCompetitions } from '@/lib/mock-data';
 
 export default function AdminCompetitionsPage() {
   const [competitions, setCompetitions] = useState(mockCompetitions);
@@ -106,6 +47,22 @@ export default function AdminCompetitionsPage() {
     comp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     comp.slug.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleDelete = (competitionId: string) => {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cette compétition ?')) {
+      setCompetitions(prev => prev.filter(c => c._id !== competitionId));
+    }
+  };
+
+  const handleStatusChange = (competitionId: string, newStatus: string) => {
+    setCompetitions(prev => 
+      prev.map(c => 
+        c._id === competitionId 
+          ? { ...c, status: newStatus as any }
+          : c
+      )
+    );
+  };
 
   if (loading) {
     return (
@@ -136,9 +93,11 @@ export default function AdminCompetitionsPage() {
             <h1 className="text-3xl font-bold text-gray-900">Compétitions</h1>
             <p className="text-gray-600 mt-1">Gérez toutes les compétitions de la plateforme</p>
           </div>
-          <Button className="bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-lg">
-            <Plus className="w-4 h-4 mr-2" />
-            Nouvelle compétition
+          <Button asChild className="bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-lg">
+            <Link href="/admin/competitions/create">
+              <Plus className="w-4 h-4 mr-2" />
+              Nouvelle compétition
+            </Link>
           </Button>
         </div>
       </motion.div>
@@ -195,7 +154,7 @@ export default function AdminCompetitionsPage() {
                       
                       <p className="text-gray-600 mb-4">{competition.description}</p>
                       
-                      <div className="grid md:grid-cols-4 gap-4">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div className="flex items-center space-x-2">
                           <Users className="w-4 h-4 text-gray-500" />
                           <span className="text-sm text-gray-600">
@@ -217,22 +176,51 @@ export default function AdminCompetitionsPage() {
                         <div className="flex items-center space-x-2">
                           <Calendar className="w-4 h-4 text-gray-500" />
                           <span className="text-sm text-gray-600">
-                            {new Date(competition.startDate).toLocaleDateString('fr-FR')}
+                            {competition.startDate ? new Date(competition.startDate).toLocaleDateString('fr-FR') : 'Non définie'}
                           </span>
                         </div>
                       </div>
                     </div>
 
                     <div className="flex flex-col space-y-2 ml-6">
-                      <Button size="sm" variant="outline" className="rounded-xl">
-                        <Eye className="w-4 h-4 mr-2" />
-                        Voir
+                      <Button asChild size="sm" variant="outline" className="rounded-xl">
+                        <Link href={`/competitions/${competition.slug}/vote`}>
+                          <Eye className="w-4 h-4 mr-2" />
+                          Voir
+                        </Link>
                       </Button>
                       <Button size="sm" variant="outline" className="rounded-xl">
                         <Edit className="w-4 h-4 mr-2" />
                         Modifier
                       </Button>
-                      <Button size="sm" variant="outline" className="rounded-xl text-red-600 hover:text-red-700">
+                      
+                      {/* Quick status change */}
+                      {competition.status === 'draft' && (
+                        <Button 
+                          size="sm" 
+                          onClick={() => handleStatusChange(competition._id, 'active')}
+                          className="bg-green-600 hover:bg-green-700 rounded-xl text-white"
+                        >
+                          Activer
+                        </Button>
+                      )}
+                      
+                      {competition.status === 'active' && (
+                        <Button 
+                          size="sm" 
+                          onClick={() => handleStatusChange(competition._id, 'ended')}
+                          className="bg-gray-600 hover:bg-gray-700 rounded-xl text-white"
+                        >
+                          Terminer
+                        </Button>
+                      )}
+                      
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        onClick={() => handleDelete(competition._id)}
+                        className="rounded-xl text-red-600 hover:text-red-700 border-red-200 hover:border-red-300"
+                      >
                         <Trash2 className="w-4 h-4 mr-2" />
                         Supprimer
                       </Button>
@@ -244,6 +232,28 @@ export default function AdminCompetitionsPage() {
           );
         })}
       </motion.div>
+
+      {filteredCompetitions.length === 0 && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-center py-16"
+        >
+          <Trophy className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-gray-600 mb-2">
+            Aucune compétition trouvée
+          </h3>
+          <p className="text-gray-500 mb-6">
+            {searchTerm ? 'Aucun résultat pour votre recherche' : 'Créez votre première compétition'}
+          </p>
+          <Button asChild className="bg-indigo-600 hover:bg-indigo-700 rounded-xl">
+            <Link href="/admin/competitions/create">
+              <Plus className="w-4 h-4 mr-2" />
+              Créer une compétition
+            </Link>
+          </Button>
+        </motion.div>
+      )}
     </div>
   );
 }

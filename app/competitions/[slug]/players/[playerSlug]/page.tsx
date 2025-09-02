@@ -20,18 +20,7 @@ import {
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { mockPlayers, mockCompetitions } from '@/lib/mock-data';
-
-// Mock data pour les votes dans le temps
-const mockVotesHistory = [
-  { date: '15/01', votes: 12 },
-  { date: '16/01', votes: 18 },
-  { date: '17/01', votes: 25 },
-  { date: '18/01', votes: 31 },
-  { date: '19/01', votes: 28 },
-  { date: '20/01', votes: 35 },
-  { date: '21/01', votes: 42 }
-];
+import { mockPlayers, mockCompetitions, mockPlayerVotesHistory } from '@/lib/mock-data';
 
 export default function PlayerDetailPage() {
   const params = useParams();
@@ -57,13 +46,13 @@ export default function PlayerDetailPage() {
 
   if (loading) {
     return (
-      <div className="bg-gradient-to-br from-indigo-50 via-white to-blue-50 py-16">
+      <div className="bg-gradient-to-br from-indigo-50 via-white to-blue-50 py-8 md:py-16">
         <div className="container mx-auto px-4">
-          <div className="grid lg:grid-cols-3 gap-8">
+          <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
             <div className="lg:col-span-2 space-y-6">
               <Card className="rounded-2xl">
-                <CardContent className="p-8">
-                  <div className="h-64 bg-gray-200 rounded-2xl animate-pulse" />
+                <CardContent className="p-6 md:p-8">
+                  <div className="h-48 md:h-64 bg-gray-200 rounded-2xl animate-pulse" />
                 </CardContent>
               </Card>
             </div>
@@ -82,9 +71,9 @@ export default function PlayerDetailPage() {
 
   if (!player || !competition) {
     return (
-      <div className="bg-gradient-to-br from-indigo-50 via-white to-blue-50 py-16">
+      <div className="bg-gradient-to-br from-indigo-50 via-white to-blue-50 py-8 md:py-16">
         <div className="container mx-auto px-4 text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Joueur non trouvé</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">Joueur non trouvé</h1>
           <Button asChild>
             <Link href="/competitions">
               <ArrowLeft className="w-4 h-4 mr-2" />
@@ -109,13 +98,13 @@ export default function PlayerDetailPage() {
 
   return (
     <>
-      <div className="bg-gradient-to-br from-indigo-50 via-white to-blue-50 py-16">
+      <div className="bg-gradient-to-br from-indigo-50 via-white to-blue-50 py-8 md:py-16">
         <div className="container mx-auto px-4">
           {/* Navigation */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-8"
+            className="mb-6 md:mb-8"
           >
             <Button asChild variant="outline" className="rounded-xl">
               <Link href={`/competitions/${competitionSlug}/vote`}>
@@ -125,9 +114,9 @@ export default function PlayerDetailPage() {
             </Button>
           </motion.div>
 
-          <div className="grid lg:grid-cols-3 gap-8">
+          <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
             {/* Main Content */}
-            <div className="lg:col-span-2 space-y-8">
+            <div className="lg:col-span-2 space-y-6 lg:space-y-8">
               {/* Player Header */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -137,13 +126,13 @@ export default function PlayerDetailPage() {
                 <Card className="rounded-2xl shadow-xl border-0 overflow-hidden bg-white/90 backdrop-blur-sm">
                   <div className="relative">
                     {/* Background */}
-                    <div className="h-48 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600" />
+                    <div className="h-32 md:h-48 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600" />
                     
                     {/* Content */}
-                    <div className="relative -mt-24 p-8">
+                    <div className="relative -mt-16 md:-mt-24 p-4 md:p-8">
                       <div className="flex flex-col md:flex-row items-start md:items-end space-y-4 md:space-y-0 md:space-x-6">
                         {/* Photo */}
-                        <div className="w-32 h-32 bg-white rounded-2xl shadow-xl overflow-hidden border-4 border-white">
+                        <div className="w-24 h-24 md:w-32 md:h-32 bg-white rounded-2xl shadow-xl overflow-hidden border-4 border-white mx-auto md:mx-0">
                           {player.photoUrl ? (
                             <img
                               src={player.photoUrl}
@@ -152,38 +141,38 @@ export default function PlayerDetailPage() {
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center bg-indigo-100">
-                              <Users className="w-16 h-16 text-indigo-600" />
+                              <Users className="w-12 md:w-16 h-12 md:h-16 text-indigo-600" />
                             </div>
                           )}
                         </div>
 
                         {/* Info */}
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-3 mb-2">
-                            <h1 className="text-3xl font-bold text-gray-900">
+                        <div className="flex-1 text-center md:text-left">
+                          <div className="flex flex-col md:flex-row md:items-center md:space-x-3 mb-2">
+                            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
                               {player.firstName} {player.lastName}
                             </h1>
-                            <Badge className="bg-yellow-100 text-yellow-800 rounded-full px-3 py-1">
+                            <Badge className="bg-yellow-100 text-yellow-800 rounded-full px-3 py-1 w-fit mx-auto md:mx-0 mt-2 md:mt-0">
                               #{playerRank}
                             </Badge>
                           </div>
                           
-                          <div className="flex flex-wrap items-center gap-4 text-gray-600 mb-4">
+                          <div className="flex flex-wrap justify-center md:justify-start items-center gap-2 md:gap-4 text-gray-600 mb-4">
                             <div className="flex items-center space-x-1">
                               <Calendar className="w-4 h-4" />
-                              <span>{player.age} ans</span>
+                              <span className="text-sm">{player.age} ans</span>
                             </div>
                             <div className="flex items-center space-x-1">
                               <Users className="w-4 h-4" />
-                              <span>{player.team}</span>
+                              <span className="text-sm">{player.team}</span>
                             </div>
                             <div className="flex items-center space-x-1">
                               <MapPin className="w-4 h-4" />
-                              <span>{player.position}</span>
+                              <span className="text-sm">{player.position}</span>
                             </div>
                           </div>
 
-                          <p className="text-gray-700 leading-relaxed">{player.bio}</p>
+                          <p className="text-gray-700 leading-relaxed text-sm md:text-base">{player.bio}</p>
                         </div>
                       </div>
                     </div>
@@ -196,45 +185,45 @@ export default function PlayerDetailPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="grid md:grid-cols-4 gap-6"
+                className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6"
               >
                 <Card className="rounded-2xl shadow-lg border-0 text-center">
-                  <CardContent className="p-6">
-                    <Vote className="w-8 h-8 text-indigo-600 mx-auto mb-3" />
-                    <div className="text-3xl font-bold text-indigo-600 mb-1">
+                  <CardContent className="p-4 md:p-6">
+                    <Vote className="w-6 md:w-8 h-6 md:h-8 text-indigo-600 mx-auto mb-3" />
+                    <div className="text-2xl md:text-3xl font-bold text-indigo-600 mb-1">
                       {player.votesConfirmed}
                     </div>
-                    <div className="text-sm text-gray-600">Votes confirmés</div>
+                    <div className="text-xs md:text-sm text-gray-600">Votes confirmés</div>
                   </CardContent>
                 </Card>
 
                 <Card className="rounded-2xl shadow-lg border-0 text-center">
-                  <CardContent className="p-6">
-                    <Trophy className="w-8 h-8 text-yellow-500 mx-auto mb-3" />
-                    <div className="text-3xl font-bold text-yellow-600 mb-1">
+                  <CardContent className="p-4 md:p-6">
+                    <Trophy className="w-6 md:w-8 h-6 md:h-8 text-yellow-500 mx-auto mb-3" />
+                    <div className="text-2xl md:text-3xl font-bold text-yellow-600 mb-1">
                       #{playerRank}
                     </div>
-                    <div className="text-sm text-gray-600">Position</div>
+                    <div className="text-xs md:text-sm text-gray-600">Position</div>
                   </CardContent>
                 </Card>
 
                 <Card className="rounded-2xl shadow-lg border-0 text-center">
-                  <CardContent className="p-6">
-                    <TrendingUp className="w-8 h-8 text-emerald-600 mx-auto mb-3" />
-                    <div className="text-3xl font-bold text-emerald-600 mb-1">
+                  <CardContent className="p-4 md:p-6">
+                    <TrendingUp className="w-6 md:w-8 h-6 md:h-8 text-emerald-600 mx-auto mb-3" />
+                    <div className="text-2xl md:text-3xl font-bold text-emerald-600 mb-1">
                       {marketShare}%
                     </div>
-                    <div className="text-sm text-gray-600">Part de marché</div>
+                    <div className="text-xs md:text-sm text-gray-600">Part de marché</div>
                   </CardContent>
                 </Card>
 
                 <Card className="rounded-2xl shadow-lg border-0 text-center">
-                  <CardContent className="p-6">
-                    <Star className="w-8 h-8 text-purple-600 mx-auto mb-3" />
-                    <div className="text-3xl font-bold text-purple-600 mb-1">
+                  <CardContent className="p-4 md:p-6">
+                    <Star className="w-6 md:w-8 h-6 md:h-8 text-purple-600 mx-auto mb-3" />
+                    <div className="text-2xl md:text-3xl font-bold text-purple-600 mb-1">
                       {(player.votesConfirmed * 200 / 1000).toFixed(0)}K
                     </div>
-                    <div className="text-sm text-gray-600">FCFA générés</div>
+                    <div className="text-xs md:text-sm text-gray-600">FCFA générés</div>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -247,18 +236,18 @@ export default function PlayerDetailPage() {
               >
                 <Card className="rounded-2xl shadow-lg border-0">
                   <CardHeader>
-                    <CardTitle className="flex items-center">
+                    <CardTitle className="flex items-center text-lg md:text-xl">
                       <TrendingUp className="w-5 h-5 mr-2" />
                       Évolution des votes
                     </CardTitle>
                     <CardDescription>Votes reçus au cours des 7 derniers jours</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <ResponsiveContainer width="100%" height={300}>
-                      <LineChart data={mockVotesHistory}>
+                    <ResponsiveContainer width="100%" height={250}>
+                      <LineChart data={mockPlayerVotesHistory}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                        <XAxis dataKey="date" stroke="#666" />
-                        <YAxis stroke="#666" />
+                        <XAxis dataKey="date" stroke="#666" fontSize={12} />
+                        <YAxis stroke="#666" fontSize={12} />
                         <Tooltip 
                           contentStyle={{ 
                             backgroundColor: 'white', 
@@ -272,8 +261,8 @@ export default function PlayerDetailPage() {
                           dataKey="votes" 
                           stroke="#6366f1" 
                           strokeWidth={3}
-                          dot={{ fill: '#6366f1', strokeWidth: 2, r: 6 }}
-                          activeDot={{ r: 8, stroke: '#6366f1', strokeWidth: 2 }}
+                          dot={{ fill: '#6366f1', strokeWidth: 2, r: 4 }}
+                          activeDot={{ r: 6, stroke: '#6366f1', strokeWidth: 2 }}
                         />
                       </LineChart>
                     </ResponsiveContainer>
@@ -291,14 +280,14 @@ export default function PlayerDetailPage() {
                 transition={{ delay: 0.2 }}
               >
                 <Card className="rounded-2xl shadow-lg border-0 bg-gradient-to-br from-indigo-600 to-purple-600 text-white">
-                  <CardContent className="p-6 text-center">
-                    <Vote className="w-12 h-12 text-white mx-auto mb-4" />
-                    <h3 className="text-xl font-bold mb-2">Votez maintenant</h3>
+                  <CardContent className="p-4 md:p-6 text-center">
+                    <Vote className="w-10 md:w-12 h-10 md:h-12 text-white mx-auto mb-4" />
+                    <h3 className="text-lg md:text-xl font-bold mb-2">Votez maintenant</h3>
                     <p className="text-indigo-100 mb-6 text-sm">
                       Soutenez {player.firstName} avec votre vote
                     </p>
                     <div className="bg-white/20 rounded-xl p-4 mb-6">
-                      <div className="text-2xl font-bold">{competition.votePrice} FCFA</div>
+                      <div className="text-xl md:text-2xl font-bold">{competition.votePrice} FCFA</div>
                       <div className="text-sm text-indigo-100">par vote</div>
                     </div>
                     <Button
@@ -385,7 +374,14 @@ export default function PlayerDetailPage() {
                     <p className="text-sm text-gray-600 mb-4">
                       Partagez le profil de {player.firstName} avec vos amis
                     </p>
-                    <Button variant="outline" className="w-full rounded-xl">
+                    <Button 
+                      variant="outline" 
+                      className="w-full rounded-xl"
+                      onClick={() => {
+                        navigator.clipboard.writeText(window.location.href);
+                        alert('Lien copié !');
+                      }}
+                    >
                       <Share2 className="w-4 h-4 mr-2" />
                       Copier le lien
                     </Button>
