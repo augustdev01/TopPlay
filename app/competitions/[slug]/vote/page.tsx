@@ -1,14 +1,20 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
-import { PlayersGrid } from '@/components/players/players-grid';
-import { PlayersFilters } from '@/components/players/players-filters';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Trophy, ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
+import { PlayersGrid } from "@/components/players/players-grid";
+import { PlayersFilters } from "@/components/players/players-filters";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Trophy, ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { motion } from "framer-motion";
 
 interface Competition {
   _id: string;
@@ -35,16 +41,16 @@ interface Player {
 export default function VotePage() {
   const params = useParams();
   const competitionSlug = params.slug as string;
-  
+
   const [competition, setCompetition] = useState<Competition | null>(null);
   const [players, setPlayers] = useState<Player[]>([]);
   const [filteredPlayers, setFilteredPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
-    search: '',
-    team: '',
-    position: '',
-    sortBy: 'votes'
+    search: "",
+    team: "",
+    position: "",
+    sortBy: "votes",
   });
 
   useEffect(() => {
@@ -59,7 +65,7 @@ export default function VotePage() {
     try {
       const [compResponse, playersResponse] = await Promise.all([
         fetch(`/api/competitions/${competitionSlug}`),
-        fetch(`/api/competitions/${competitionSlug}/players`)
+        fetch(`/api/competitions/${competitionSlug}/players`),
       ]);
 
       if (compResponse.ok) {
@@ -72,7 +78,7 @@ export default function VotePage() {
         setPlayers(playersData);
       }
     } catch (error) {
-      console.error('Erreur chargement données:', error);
+      console.error("Erreur chargement données:", error);
     } finally {
       setLoading(false);
     }
@@ -84,31 +90,37 @@ export default function VotePage() {
     // Recherche par nom
     if (filters.search) {
       const search = filters.search.toLowerCase();
-      filtered = filtered.filter(player => 
+      filtered = filtered.filter((player) =>
         `${player.firstName} ${player.lastName}`.toLowerCase().includes(search)
       );
     }
 
     // Filtre par équipe
     if (filters.team) {
-      filtered = filtered.filter(player => player.team === filters.team);
+      filtered = filtered.filter((player) => player.team === filters.team);
     }
 
     // Filtre par poste
     if (filters.position) {
-      filtered = filtered.filter(player => player.position === filters.position);
+      filtered = filtered.filter(
+        (player) => player.position === filters.position
+      );
     }
 
     // Tri
     switch (filters.sortBy) {
-      case 'votes':
+      case "votes":
         filtered.sort((a, b) => b.votesConfirmed - a.votesConfirmed);
         break;
-      case 'name':
-        filtered.sort((a, b) => `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`));
+      case "name":
+        filtered.sort((a, b) =>
+          `${a.firstName} ${a.lastName}`.localeCompare(
+            `${b.firstName} ${b.lastName}`
+          )
+        );
         break;
-      case 'team':
-        filtered.sort((a, b) => (a.team || '').localeCompare(b.team || ''));
+      case "team":
+        filtered.sort((a, b) => (a.team || "").localeCompare(b.team || ""));
         break;
     }
 
@@ -135,7 +147,7 @@ export default function VotePage() {
     );
   }
 
-  if (!competition || competition.status !== 'active') {
+  if (!competition || competition.status !== "active") {
     return (
       <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 flex items-center justify-center p-4">
         <Card className="w-full max-w-md text-center">
@@ -159,8 +171,10 @@ export default function VotePage() {
     );
   }
 
-  const uniqueTeams = [...new Set(players.map(p => p.team).filter(Boolean))];
-  const uniquePositions = [...new Set(players.map(p => p.position).filter(Boolean))];
+  const uniqueTeams = [...new Set(players.map((p) => p.team).filter(Boolean))];
+  const uniquePositions = [
+    ...new Set(players.map((p) => p.position).filter(Boolean)),
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50">
@@ -177,7 +191,9 @@ export default function VotePage() {
                   {competition.name}
                 </h1>
                 {competition.description && (
-                  <p className="text-lg text-gray-600">{competition.description}</p>
+                  <p className="text-lg text-gray-600">
+                    {competition.description}
+                  </p>
                 )}
                 <div className="flex items-center space-x-4 mt-4">
                   <div className="flex items-center space-x-2 bg-indigo-50 rounded-full px-4 py-2">
@@ -194,7 +210,7 @@ export default function VotePage() {
                   </div>
                 </div>
               </div>
-              
+
               <div className="flex space-x-3">
                 <Button asChild variant="outline" className="rounded-xl">
                   <Link href="/competitions">
@@ -202,7 +218,10 @@ export default function VotePage() {
                     Retour
                   </Link>
                 </Button>
-                <Button asChild className="bg-emerald-600 hover:bg-emerald-700 rounded-xl">
+                <Button
+                  asChild
+                  className="bg-emerald-600 hover:bg-emerald-700 rounded-xl"
+                >
                   <Link href={`/competitions/${competitionSlug}/classement`}>
                     <Trophy className="w-4 h-4 mr-2" />
                     Classement
@@ -236,7 +255,7 @@ export default function VotePage() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
         >
-          <PlayersGrid 
+          <PlayersGrid
             players={filteredPlayers}
             competition={competition}
             onVoteSuccess={fetchData}
