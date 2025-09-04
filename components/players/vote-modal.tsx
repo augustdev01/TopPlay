@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Vote, CreditCard, Smartphone } from 'lucide-react';
+import { Vote, CreditCard, Smartphone, ExternalLink } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface Player {
@@ -60,8 +60,13 @@ export function VoteModal({ open, onOpenChange, player, competition, onSuccess }
 
       const data = await response.json();
       
-      // Rediriger vers Wave Business avec le numéro de téléphone
-      window.location.href = data.checkoutUrl;
+      // Ouvrir le lien Wave dans un nouvel onglet/app
+      window.open(data.wavePaymentUrl, '_blank');
+      
+      // Rediriger vers la page de confirmation après un court délai
+      setTimeout(() => {
+        window.location.href = `/paiement/confirmation?orderId=${data.orderId}&state=${data.state}`;
+      }, 1000);
       
     } catch (error) {
       console.error('Erreur vote:', error);
@@ -149,8 +154,19 @@ export function VoteModal({ open, onOpenChange, player, competition, onSuccess }
               />
             </div>
             <p className="text-xs text-gray-500">
-              Numéro associé à votre compte Wave pour le paiement
+              Ce numéro sera pré-rempli dans l'app Wave pour faciliter le paiement
             </p>
+          </div>
+
+          {/* Process Explanation */}
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+            <h4 className="font-medium text-blue-900 mb-2">Comment ça marche :</h4>
+            <ol className="text-sm text-blue-700 space-y-1">
+              <li>1. Cliquez sur "Payer avec Wave"</li>
+              <li>2. L'app Wave s'ouvre avec le montant pré-rempli</li>
+              <li>3. Confirmez le paiement dans Wave</li>
+              <li>4. Revenez ici pour confirmer votre vote</li>
+            </ol>
           </div>
 
           {/* Actions */}
@@ -175,14 +191,10 @@ export function VoteModal({ open, onOpenChange, player, competition, onSuccess }
                   className="w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"
                 />
               ) : (
-                <CreditCard className="w-4 h-4 mr-2" />
+                <ExternalLink className="w-4 h-4 mr-2" />
               )}
-              {loading ? 'Redirection...' : 'Payer avec Wave'}
+              {loading ? 'Préparation...' : 'Payer avec Wave'}
             </Button>
-          </div>
-          
-          <div className="text-xs text-gray-500 text-center">
-            Vous serez redirigé vers l'application Wave pour confirmer le paiement
           </div>
         </div>
       </DialogContent>

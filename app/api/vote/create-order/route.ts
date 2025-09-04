@@ -3,8 +3,7 @@ import dbConnect from '@/lib/mongodb';
 import { Order } from '@/lib/models/Order';
 import { Competition } from '@/lib/models/Competition';
 import { Player } from '@/lib/models/Player';
-import { signState } from '@/lib/auth/jwt';
-import { buildWaveCheckoutUrl } from '@/lib/wave/payment';
+import { buildWavePaymentUrl, generateSecureState } from '@/lib/wave/payment';
 import { z } from 'zod';
 
 const voteSchema = z.object({
@@ -70,41 +69,31 @@ export async function POST(request: Request) {
 
     await order.save();
 
-    // Créer le state signé
-    const stateToken = signState({
-      orderId: order._id.toString(),
-      competitionId: competition._id.toString(),
-      playerId: player._id.toString(),
-      amount: competition.votePrice
-    });
+    // Générer le state sécurisé
+    const secureState = generateSecureState(order._id.toString());
 
-    // Construire l'URL Wave avec le numéro de téléphone
-    const redirectUrl = `${process.env.APP_BASE_URL}/paiement/retour`;
-    const callbackUrl = `${process.env.APP_BASE_URL}/api/payments/wave/callback`;
-    
-    const checkoutUrl = buildWaveCheckoutUrl({
+    // Construire l'URL Wave Business directe
+    const wavePaymentUrl = buildWavePaymentUrl({
       amount: competition.votePrice,
-      currency: 'XOF',
-      description: `Vote pour ${player.firstName} ${player.lastName} - ${competition.name}`,
-      state: stateToken,
-      redirectUrl,
-      callbackUrl,
-      customerPhone // Pré-remplir le numéro dans Wave
+      orderId: order._id.toString(),
+      playerName: `${player.firstName} ${player.lastName}`,
+      competitionName: competition.name
     });
 
     // Mettre à jour l'order avec les URLs
-    order.stateToken = stateToken;
-    order.checkoutUrl = checkoutUrl;
+    order.stateToken = secureState;
+    order.checkoutUrl = wavePaymentUrl;
     await order.save();
 
-    // Incrémenter votesPending pour le monitoring
+    // Incrémenter votesPending pour le monitoring (optionnel)
     await Player.findByIdAndUpdate(player._id, {
       $inc: { votesPending: 1 }
     });
 
     return NextResponse.json({
       orderId: order._id.toString(),
-      checkoutUrl,
+      wavePaymentUrl,
+      state: secureState,
       player: {
         firstName: player.firstName,
         lastName: player.lastName

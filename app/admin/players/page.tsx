@@ -1,66 +1,83 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { 
-  Users, 
-  Plus, 
-  Search, 
-  Edit, 
-  Trash2, 
+import { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Users,
+  Plus,
+  Search,
+  Edit,
+  Trash2,
   Trophy,
   Vote,
   Filter,
-  Eye
-} from 'lucide-react';
-import { motion } from 'framer-motion';
-import Link from 'next/link';
-import { mockPlayers, mockCompetitions } from '@/lib/mock-data';
+  Eye,
+} from "lucide-react";
+import { motion } from "framer-motion";
+import Link from "next/link";
+import { mockPlayers, mockCompetitions } from "@/lib/mock-data";
 
 export default function AdminPlayersPage() {
   const [players, setPlayers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCompetition, setSelectedCompetition] = useState('');
-  const [selectedTeam, setSelectedTeam] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCompetition, setSelectedCompetition] = useState("");
+  const [selectedTeam, setSelectedTeam] = useState("");
 
   useEffect(() => {
     // Enrichir les données des joueurs avec les infos de compétition
-    const enrichedPlayers = mockPlayers.map(player => {
-      const competition = mockCompetitions.find(c => c._id === player.competitionId);
+    const enrichedPlayers = mockPlayers.map((player) => {
+      const competition = mockCompetitions.find(
+        (c) => c._id === player.competitionId
+      );
       return {
         ...player,
-        competition: competition?.name || 'Compétition inconnue',
-        competitionSlug: competition?.slug || '',
-        competitionStatus: competition?.status || 'draft',
-        revenue: player.votesConfirmed * (competition?.votePrice || 200)
+        competition: competition?.name || "Compétition inconnue",
+        competitionSlug: competition?.slug || "",
+        competitionStatus: competition?.status || "draft",
+        revenue: player.votesConfirmed * (competition?.votePrice || 200),
       };
     });
-    
+
     setTimeout(() => {
       setPlayers(enrichedPlayers);
       setLoading(false);
     }, 800);
   }, []);
 
-  const competitions = [...new Set(players.map(p => p.competition))];
-  const teams = [...new Set(players.map(p => p.team).filter(Boolean))];
+  const competitions = Array.from(new Set(players.map((p) => p.competition)));
+  const teams = Array.from(new Set(players.map((p) => p.team).filter(Boolean)));
 
-  const filteredPlayers = players.filter(player => {
-    const matchesSearch = `${player.firstName} ${player.lastName}`.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCompetition = !selectedCompetition || player.competition === selectedCompetition;
+  const filteredPlayers = players.filter((player) => {
+    const matchesSearch = `${player.firstName} ${player.lastName}`
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    const matchesCompetition =
+      !selectedCompetition || player.competition === selectedCompetition;
     const matchesTeam = !selectedTeam || player.team === selectedTeam;
-    
+
     return matchesSearch && matchesCompetition && matchesTeam;
   });
 
   const handleDelete = (playerId: string) => {
-    if (confirm('Êtes-vous sûr de vouloir supprimer ce joueur ?')) {
-      setPlayers(prev => prev.filter(p => p._id !== playerId));
+    if (confirm("Êtes-vous sûr de vouloir supprimer ce joueur ?")) {
+      setPlayers((prev) => prev.filter((p) => p._id !== playerId));
     }
   };
 
@@ -91,9 +108,14 @@ export default function AdminPlayersPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Joueurs</h1>
-            <p className="text-gray-600 mt-1">Gérez tous les joueurs de la plateforme</p>
+            <p className="text-gray-600 mt-1">
+              Gérez tous les joueurs de la plateforme
+            </p>
           </div>
-          <Button asChild className="bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-lg">
+          <Button
+            asChild
+            className="bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-lg"
+          >
             <Link href="/admin/players/create">
               <Plus className="w-4 h-4 mr-2" />
               Nouveau joueur
@@ -126,15 +148,20 @@ export default function AdminPlayersPage() {
                   className="pl-10 rounded-xl"
                 />
               </div>
-              
-              <Select value={selectedCompetition} onValueChange={setSelectedCompetition}>
+
+              <Select
+                value={selectedCompetition}
+                onValueChange={setSelectedCompetition}
+              >
                 <SelectTrigger className="rounded-xl">
                   <SelectValue placeholder="Toutes les compétitions" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="">Toutes les compétitions</SelectItem>
-                  {competitions.map(comp => (
-                    <SelectItem key={comp} value={comp}>{comp}</SelectItem>
+                  {competitions.map((comp) => (
+                    <SelectItem key={comp} value={comp}>
+                      {comp}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -145,8 +172,10 @@ export default function AdminPlayersPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="">Toutes les équipes</SelectItem>
-                  {teams.map(team => (
-                    <SelectItem key={team} value={team}>{team}</SelectItem>
+                  {teams.map((team) => (
+                    <SelectItem key={team} value={team}>
+                      {team}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -202,37 +231,51 @@ export default function AdminPlayersPage() {
                         <Badge variant="outline" className="text-xs">
                           {player.age} ans
                         </Badge>
-                        <Badge className={`text-xs ${
-                          player.competitionStatus === 'active' ? 'bg-green-100 text-green-700' :
-                          player.competitionStatus === 'ended' ? 'bg-gray-100 text-gray-700' :
-                          'bg-orange-100 text-orange-700'
-                        }`}>
+                        <Badge
+                          className={`text-xs ${
+                            player.competitionStatus === "active"
+                              ? "bg-green-100 text-green-700"
+                              : player.competitionStatus === "ended"
+                              ? "bg-gray-100 text-gray-700"
+                              : "bg-orange-100 text-orange-700"
+                          }`}
+                        >
                           {player.competitionStatus}
                         </Badge>
                       </div>
-                      
+
                       <div className="flex items-center space-x-4 text-sm text-gray-600 mb-3">
-                        <span>{player.team || 'Équipe non définie'}</span>
+                        <span>{player.team || "Équipe non définie"}</span>
                         {player.team && <span>•</span>}
-                        <span>{player.position || 'Position non définie'}</span>
+                        <span>{player.position || "Position non définie"}</span>
                         <span>•</span>
                         <span>{player.competition}</span>
                       </div>
 
                       <div className="grid grid-cols-3 gap-4">
                         <div className="bg-emerald-50 rounded-lg p-2 text-center">
-                          <div className="text-lg font-bold text-emerald-600">{player.votesConfirmed}</div>
-                          <div className="text-xs text-gray-600">Votes confirmés</div>
+                          <div className="text-lg font-bold text-emerald-600">
+                            {player.votesConfirmed}
+                          </div>
+                          <div className="text-xs text-gray-600">
+                            Votes confirmés
+                          </div>
                         </div>
                         <div className="bg-orange-50 rounded-lg p-2 text-center">
-                          <div className="text-lg font-bold text-orange-600">{player.votesPending || 0}</div>
-                          <div className="text-xs text-gray-600">En attente</div>
+                          <div className="text-lg font-bold text-orange-600">
+                            {player.votesPending || 0}
+                          </div>
+                          <div className="text-xs text-gray-600">
+                            En attente
+                          </div>
                         </div>
                         <div className="bg-indigo-50 rounded-lg p-2 text-center">
                           <div className="text-lg font-bold text-indigo-600">
                             {(player.revenue / 1000).toFixed(0)}K
                           </div>
-                          <div className="text-xs text-gray-600">FCFA générés</div>
+                          <div className="text-xs text-gray-600">
+                            FCFA générés
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -240,8 +283,15 @@ export default function AdminPlayersPage() {
 
                   {/* Actions */}
                   <div className="flex flex-col space-y-2 ml-6">
-                    <Button asChild size="sm" variant="outline" className="rounded-xl">
-                      <Link href={`/competitions/${player.competitionSlug}/players/${player.slug}`}>
+                    <Button
+                      asChild
+                      size="sm"
+                      variant="outline"
+                      className="rounded-xl"
+                    >
+                      <Link
+                        href={`/competitions/${player.competitionSlug}/players/${player.slug}`}
+                      >
                         <Eye className="w-4 h-4 mr-2" />
                         Voir
                       </Link>
@@ -250,9 +300,9 @@ export default function AdminPlayersPage() {
                       <Edit className="w-4 h-4 mr-2" />
                       Modifier
                     </Button>
-                    <Button 
-                      size="sm" 
-                      variant="outline" 
+                    <Button
+                      size="sm"
+                      variant="outline"
                       onClick={() => handleDelete(player._id)}
                       className="rounded-xl text-red-600 hover:text-red-700 border-red-200 hover:border-red-300"
                     >
@@ -278,9 +328,14 @@ export default function AdminPlayersPage() {
             Aucun joueur trouvé
           </h3>
           <p className="text-gray-500 mb-6">
-            {searchTerm ? 'Aucun résultat pour votre recherche' : 'Ajoutez votre premier joueur'}
+            {searchTerm
+              ? "Aucun résultat pour votre recherche"
+              : "Ajoutez votre premier joueur"}
           </p>
-          <Button asChild className="bg-indigo-600 hover:bg-indigo-700 rounded-xl">
+          <Button
+            asChild
+            className="bg-indigo-600 hover:bg-indigo-700 rounded-xl"
+          >
             <Link href="/admin/players/create">
               <Plus className="w-4 h-4 mr-2" />
               Ajouter un joueur
