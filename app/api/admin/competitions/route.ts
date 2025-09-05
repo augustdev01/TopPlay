@@ -1,19 +1,30 @@
 import { NextResponse } from 'next/server';
-import dbConnect from '@/lib/mongodb';
-import { Competition } from '@/lib/models/Competition';
+import { db, competitions } from '@/lib/db';
 import { competitionSchema } from '@/lib/validations/schemas';
 
 export async function GET() {
   try {
-    await dbConnect();
-    
-    const competitions = await Competition.find({})
-      .sort({ createdAt: -1 })
-      .lean();
+    const allCompetitions = await db.query.competitions.findMany({
+      orderBy: (competitions, { desc }) => [desc(competitions.createdAt)],
+      with: {
+        players: {
+          columns: {
+            votesConfirmed: true,
+          }
+        }
+      }
+    });
 
-    return NextResponse.json(competitions);
+    const enrichedCompetitions = allCompetitions.map(comp => ({
+      ...comp,
+      playersCount: comp.players.length,
+      totalVotes: comp.players.reduce((acc, player) => acc + player.votesConfirmed, 0),
+      revenue: comp.players.reduce((acc, player) => acc + player.votesConfirmed, 0) * comp.votePrice
+    }));
+
+    return NextResponse.json(enrichedCompetitions);
   } catch (error) {
-    console.error('Erreur récupération compétitions:', error);
+    console.error('Erreur récupération compétitions admin:', error);
     return NextResponse.json(
       { error: 'Erreur serveur' },
       { status: 500 }
@@ -33,10 +44,10 @@ export async function POST(request: Request) {
       );
     }
 
-    await dbConnect();
+    const existingCompetition = await db.query.competitions.findFirst({
+      where: (competitions, { eq }) => eq(competitions.slug, validation.data.slug)
+    });
 
-    // Vérifier que le slug est unique
-    const existingCompetition = await Competition.findOne({ slug: validation.data.slug });
     if (existingCompetition) {
       return NextResponse.json(
         { error: 'Ce slug existe déjà' },
@@ -44,8 +55,11 @@ export async function POST(request: Request) {
       );
     }
 
-    const competition = new Competition(validation.data);
-    await competition.save();
+    const [competition] = await db.insert(competitions).values({
+      ...validation.data,
+      startDate: validation.data.startDate ? new Date(validation.data.startDate) : null,
+      endDate: validation.data.endDate ? new Date(validation.data.endDate) : null,
+    }).returning();
 
     return NextResponse.json(competition, { status: 201 });
   } catch (error) {

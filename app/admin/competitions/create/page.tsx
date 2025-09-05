@@ -31,13 +31,22 @@ export default function CreateCompetitionPage() {
     setLoading(true);
 
     try {
-      // Simuler la création
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const response = await fetch('/api/admin/competitions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Erreur création');
+      }
       
       // Rediriger vers la liste
       router.push('/admin/competitions');
     } catch (error) {
       console.error('Erreur création:', error);
+      alert('Erreur lors de la création de la compétition');
     } finally {
       setLoading(false);
     }
