@@ -7,15 +7,14 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "db:generate": "drizzle-kit generate:pg",
-    "db:migrate": "tsx scripts/migrate.ts",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma db push",
     "db:seed": "tsx scripts/seed.ts",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "prisma studio"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
     "@next/swc-wasm-nodejs": "13.5.1",
-    "@prisma/client": "^6.15.0",
     "@radix-ui/react-accordion": "^1.2.0",
     "@radix-ui/react-alert-dialog": "^1.1.1",
     "@radix-ui/react-aspect-ratio": "^1.1.0",
@@ -64,7 +63,6 @@
     "pg": "^8.11.0",
     "pino": "^8.16.0",
     "postcss": "8.4.30",
-    "prisma": "^6.15.0",
     "react": "18.2.0",
     "react-day-picker": "^8.10.1",
     "react-dom": "18.2.0",

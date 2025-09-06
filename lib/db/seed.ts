@@ -1,4 +1,4 @@
-import { db, competitions, players, admins } from './index';
+import { prisma } from './index';
 import bcrypt from 'bcryptjs';
 
 export async function seedDatabase() {
@@ -8,15 +8,17 @@ export async function seedDatabase() {
   const adminEmail = 'admin@votesport.com';
   const adminPassword = 'admin123';
   
-  const existingAdmin = await db.query.admins.findFirst({
-    where: (admins, { eq }) => eq(admins.email, adminEmail)
+  const existingAdmin = await prisma.admin.findUnique({
+    where: { email: adminEmail }
   });
 
   if (!existingAdmin) {
     const hashedPassword = await bcrypt.hash(adminPassword, 12);
-    await db.insert(admins).values({
-      email: adminEmail,
-      passwordHash: hashedPassword
+    await prisma.admin.create({
+      data: {
+        email: adminEmail,
+        passwordHash: hashedPassword
+      }
     });
     console.log(`👤 Admin créé: ${adminEmail} / ${adminPassword}`);
   }
@@ -46,12 +48,14 @@ export async function seedDatabase() {
   ];
 
   for (const compData of competitionsData) {
-    const existing = await db.query.competitions.findFirst({
-      where: (competitions, { eq }) => eq(competitions.slug, compData.slug)
+    const existing = await prisma.competition.findUnique({
+      where: { slug: compData.slug }
     });
 
     if (!existing) {
-      const [competition] = await db.insert(competitions).values(compData).returning();
+      const competition = await prisma.competition.create({
+        data: compData
+      });
       console.log(`🏆 Compétition créée: ${competition.name}`);
 
       // Créer des joueurs pour cette compétition
@@ -94,7 +98,9 @@ export async function seedDatabase() {
         }
       ];
 
-      await db.insert(players).values(playersData);
+      await prisma.player.createMany({
+        data: playersData
+      });
       console.log(`⚽ ${playersData.length} joueurs créés pour ${competition.name}`);
     }
   }

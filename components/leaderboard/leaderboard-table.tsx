@@ -15,7 +15,7 @@ interface LeaderboardEntry {
   team?: string;
   position?: string;
   photoUrl?: string;
-  votesConfirmed: number;
+  percentage: number; // Pourcentage au lieu du nombre brut
 }
 
 interface LeaderboardTableProps {
@@ -84,7 +84,7 @@ export function LeaderboardTable({ leaderboard, loading, error, competitionSlug 
         <CardContent className="p-8 text-center">
           <Trophy className="w-16 h-16 text-gray-400 mx-auto mb-4" />
           <p className="text-gray-600">Erreur de chargement du classement</p>
-          <Button onClick={() => window.location.reload()} className="mt-4">
+          <Button onClick={() => window.location.reload()} className="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white">
             Réessayer
           </Button>
         </CardContent>
@@ -103,7 +103,7 @@ export function LeaderboardTable({ leaderboard, loading, error, competitionSlug 
           <p className="text-gray-500 mb-6">
             Soyez le premier à voter pour vos joueurs favoris !
           </p>
-          <Button asChild className="bg-indigo-600 hover:bg-indigo-700 rounded-xl">
+          <Button asChild className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl">
             <Link href={`/competitions/${competitionSlug}/vote`}>
               Commencer à voter
             </Link>
@@ -121,7 +121,7 @@ export function LeaderboardTable({ leaderboard, loading, error, competitionSlug 
           Classement général
         </CardTitle>
         <CardDescription className="text-indigo-100">
-          Mis à jour en temps réel • {leaderboard.reduce((acc, p) => acc + p.votesConfirmed, 0)} votes au total
+          Mis à jour en temps réel • Classement en pourcentage
         </CardDescription>
       </CardHeader>
       
@@ -180,15 +180,15 @@ export function LeaderboardTable({ leaderboard, loading, error, competitionSlug 
                     </div>
                   </div>
 
-                  {/* Votes */}
+                  {/* Pourcentage */}
                   <div className="text-right">
                     <div className="flex items-center space-x-2">
                       <Vote className="w-4 h-4 text-emerald-600" />
                       <span className="text-xl font-bold text-emerald-600">
-                        {player.votesConfirmed}
+                        {player.percentage.toFixed(1)}%
                       </span>
                     </div>
-                    <div className="text-xs text-gray-500">votes</div>
+                    <div className="text-xs text-gray-500">du total</div>
                   </div>
 
                   {/* Action */}
@@ -196,7 +196,7 @@ export function LeaderboardTable({ leaderboard, loading, error, competitionSlug 
                     asChild
                     size="sm"
                     variant="outline"
-                    className="rounded-xl"
+                    className="rounded-xl hover:bg-gray-100 hover:text-gray-900"
                   >
                     <Link href={`/competitions/${competitionSlug}/players/${player.slug}`}>
                       Voir
@@ -214,7 +214,7 @@ export function LeaderboardTable({ leaderboard, loading, error, competitionSlug 
             <div className="text-sm text-gray-600">
               Mise à jour automatique toutes les 3 secondes
             </div>
-            <Button asChild className="bg-indigo-600 hover:bg-indigo-700 rounded-xl">
+            <Button asChild className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl">
               <Link href={`/competitions/${competitionSlug}/vote`}>
                 Voter maintenant
               </Link>

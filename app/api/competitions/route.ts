@@ -1,25 +1,29 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { prisma } from '@/lib/db';
 
 export async function GET() {
   try {
-    const competitions = await db.query.competitions.findMany({
-      orderBy: (competitions, { desc }) => [desc(competitions.createdAt)],
-      with: {
+    const competitions = await prisma.competition.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: {
         players: {
-          columns: {
+          select: {
             id: true,
+            votesConfirmed: true
           }
         }
       }
     });
 
-    const enrichedCompetitions = competitions.map(comp => ({
-      ...comp,
-      playersCount: comp.players.length,
-      totalVotes: comp.players.reduce((acc: number, player: any) => acc + (player.votesConfirmed || 0), 0),
-      revenue: comp.players.reduce((acc: number, player: any) => acc + (player.votesConfirmed || 0), 0) * comp.votePrice
-    }));
+    const enrichedCompetitions = competitions.map(comp => {
+      const totalVotes = comp.players.reduce((acc, player) => acc + player.votesConfirmed, 0);
+      return {
+        ...comp,
+        playersCount: comp.players.length,
+        totalVotes,
+        revenue: totalVotes * comp.votePrice
+      };
+    });
 
     return NextResponse.json(enrichedCompetitions);
   } catch (error) {

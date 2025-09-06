@@ -1,26 +1,29 @@
 import { NextResponse } from 'next/server';
-import { db, competitions } from '@/lib/db';
+import { prisma } from '@/lib/db';
 import { competitionSchema } from '@/lib/validations/schemas';
 
 export async function GET() {
   try {
-    const allCompetitions = await db.query.competitions.findMany({
-      orderBy: (competitions, { desc }) => [desc(competitions.createdAt)],
-      with: {
+    const competitions = await prisma.competition.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: {
         players: {
-          columns: {
-            votesConfirmed: true,
+          select: {
+            votesConfirmed: true
           }
         }
       }
     });
 
-    const enrichedCompetitions = allCompetitions.map(comp => ({
-      ...comp,
-      playersCount: comp.players.length,
-      totalVotes: comp.players.reduce((acc, player) => acc + player.votesConfirmed, 0),
-      revenue: comp.players.reduce((acc, player) => acc + player.votesConfirmed, 0) * comp.votePrice
-    }));
+    const enrichedCompetitions = competitions.map(comp => {
+      const totalVotes = comp.players.reduce((acc, player) => acc + player.votesConfirmed, 0);
+      return {
+        ...comp,
+        playersCount: comp.players.length,
+        totalVotes,
+        revenue: totalVotes * comp.votePrice
+      };
+    });
 
     return NextResponse.json(enrichedCompetitions);
   } catch (error) {
@@ -44,8 +47,8 @@ export async function POST(request: Request) {
       );
     }
 
-    const existingCompetition = await db.query.competitions.findFirst({
-      where: (competitions, { eq }) => eq(competitions.slug, validation.data.slug)
+    const existingCompetition = await prisma.competition.findUnique({
+      where: { slug: validation.data.slug }
     });
 
     if (existingCompetition) {
@@ -55,11 +58,13 @@ export async function POST(request: Request) {
       );
     }
 
-    const [competition] = await db.insert(competitions).values({
-      ...validation.data,
-      startDate: validation.data.startDate ? new Date(validation.data.startDate) : null,
-      endDate: validation.data.endDate ? new Date(validation.data.endDate) : null,
-    }).returning();
+    const competition = await prisma.competition.create({
+      data: {
+        ...validation.data,
+        startDate: validation.data.startDate ? new Date(validation.data.startDate) : null,
+        endDate: validation.data.endDate ? new Date(validation.data.endDate) : null,
+      }
+    });
 
     return NextResponse.json(competition, { status: 201 });
   } catch (error) {

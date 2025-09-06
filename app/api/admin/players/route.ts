@@ -1,14 +1,14 @@
 import { NextResponse } from 'next/server';
-import { db, players } from '@/lib/db';
+import { prisma } from '@/lib/db';
 import { playerSchema } from '@/lib/validations/schemas';
 
 export async function GET() {
   try {
-    const allPlayers = await db.query.players.findMany({
-      orderBy: (players, { desc }) => [desc(players.createdAt)],
-      with: {
+    const players = await prisma.player.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: {
         competition: {
-          columns: {
+          select: {
             name: true,
             slug: true,
             status: true,
@@ -18,7 +18,7 @@ export async function GET() {
       }
     });
 
-    const enrichedPlayers = allPlayers.map(player => ({
+    const enrichedPlayers = players.map(player => ({
       ...player,
       competitionName: player.competition.name,
       competitionSlug: player.competition.slug,
@@ -48,8 +48,8 @@ export async function POST(request: Request) {
       );
     }
 
-    const competition = await db.query.competitions.findFirst({
-      where: (competitions, { eq }) => eq(competitions.id, body.competitionId)
+    const competition = await prisma.competition.findUnique({
+      where: { id: body.competitionId }
     });
 
     if (!competition) {
@@ -59,11 +59,11 @@ export async function POST(request: Request) {
       );
     }
 
-    const existingPlayer = await db.query.players.findFirst({
-      where: (players, { and, eq }) => and(
-        eq(players.competitionId, body.competitionId),
-        eq(players.slug, validation.data.slug)
-      )
+    const existingPlayer = await prisma.player.findFirst({
+      where: {
+        competitionId: body.competitionId,
+        slug: validation.data.slug
+      }
     });
 
     if (existingPlayer) {
@@ -73,10 +73,12 @@ export async function POST(request: Request) {
       );
     }
 
-    const [player] = await db.insert(players).values({
-      ...validation.data,
-      competitionId: body.competitionId
-    }).returning();
+    const player = await prisma.player.create({
+      data: {
+        ...validation.data,
+        competitionId: body.competitionId
+      }
+    });
 
     return NextResponse.json(player, { status: 201 });
   } catch (error) {
