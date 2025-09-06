@@ -1,0 +1,122 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Competition {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  status      String   @default("draft") // draft, active, ended
+  votePrice   Int      @default(200)
+  startDate   DateTime?
+  endDate     DateTime?
+  rules       String?
+  description String?
+  wavePaymentBaseUrl String?
+  redirectUrl String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  players      Player[]
+  orders       Order[]
+  transactions Transaction[]
+
+  @@map("competitions")
+}
+
+model Player {
+  id             String @id @default(cuid())
+  competitionId  String
+  slug           String
+  firstName      String
+  lastName       String
+  age            Int
+  team           String?
+  position       String?
+  bio            String?
+  photoUrl       String?
+  votesConfirmed Int    @default(0)
+  votesPending   Int    @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  competition  Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  orders       Order[]
+  transactions Transaction[]
+
+  @@unique([competitionId, slug])
+  @@index([votesConfirmed])
+  @@map("players")
+}
+
+model Order {
+  id                  String   @id @default(cuid())
+  competitionId       String
+  playerId            String
+  unitPrice           Int      @default(200)
+  quantity            Int      @default(1)
+  amount              Int
+  status              String   @default("pending") // pending, paid, failed, cancelled
+  stateToken          String
+  checkoutUrl         String
+  waveTransactionRef  String?
+  customerPhone       String?
+  customerEmail       String?
+  callbackData        Json?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  competition  Competition @relation(fields: [competitionId], references: [id])
+  player       Player      @relation(fields: [playerId], references: [id])
+  transactions Transaction[]
+
+  @@index([status])
+  @@index([playerId])
+  @@index([competitionId])
+  @@index([waveTransactionRef])
+  @@map("orders")
+}
+
+model Transaction {
+  id            String   @id @default(cuid())
+  orderId       String
+  competitionId String
+  playerId      String
+  playerName    String
+  competition   String
+  transactionRef String  @unique
+  status        String   @default("submitted") // submitted, confirmed, rejected, auto_confirmed
+  amount        Int
+  currency      String   @default("XOF")
+  provider      String   @default("WAVE")
+  source        String   // callback, user_input, admin, api_verification
+  raw           Json?
+  validatedAt   DateTime?
+  createdAt     DateTime @default(now())
+
+  order        Order       @relation(fields: [orderId], references: [id])
+  competitionRel Competition @relation(fields: [competitionId], references: [id])
+  player       Player      @relation(fields: [playerId], references: [id])
+
+  @@index([orderId])
+  @@index([status])
+  @@index([competitionId])
+  @@map("transactions")
+}
+
+model Admin {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+
+  @@map("admins")
+}

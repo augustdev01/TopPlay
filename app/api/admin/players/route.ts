@@ -1,21 +1,34 @@
 import { NextResponse } from 'next/server';
-import dbConnect from '@/lib/mongodb';
-import { Player } from '@/lib/models/Player';
-import { Competition } from '@/lib/models/Competition';
+import { prisma } from '@/lib/db';
 import { playerSchema } from '@/lib/validations/schemas';
 
 export async function GET() {
   try {
-    await dbConnect();
-    
-    const players = await Player.find({})
-      .populate('competitionId', 'name slug status')
-      .sort({ createdAt: -1 })
-      .lean();
+    const players = await prisma.player.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: {
+        competition: {
+          select: {
+            name: true,
+            slug: true,
+            status: true,
+            votePrice: true,
+          }
+        }
+      }
+    });
 
-    return NextResponse.json(players);
+    const enrichedPlayers = players.map(player => ({
+      ...player,
+      competitionName: player.competition.name,
+      competitionSlug: player.competition.slug,
+      competitionStatus: player.competition.status,
+      revenue: player.votesConfirmed * player.competition.votePrice
+    }));
+
+    return NextResponse.json(enrichedPlayers);
   } catch (error) {
-    console.error('Erreur récupération joueurs:', error);
+    console.error('Erreur récupération joueurs admin:', error);
     return NextResponse.json(
       { error: 'Erreur serveur' },
       { status: 500 }
@@ -35,10 +48,10 @@ export async function POST(request: Request) {
       );
     }
 
-    await dbConnect();
+    const competition = await prisma.competition.findUnique({
+      where: { id: body.competitionId }
+    });
 
-    // Vérifier que la compétition existe
-    const competition = await Competition.findById(body.competitionId);
     if (!competition) {
       return NextResponse.json(
         { error: 'Compétition non trouvée' },
@@ -46,12 +59,13 @@ export async function POST(request: Request) {
       );
     }
 
-    // Vérifier que le slug est unique dans cette compétition
-    const existingPlayer = await Player.findOne({ 
-      competitionId: body.competitionId,
-      slug: validation.data.slug 
+    const existingPlayer = await prisma.player.findFirst({
+      where: {
+        competitionId: body.competitionId,
+        slug: validation.data.slug
+      }
     });
-    
+
     if (existingPlayer) {
       return NextResponse.json(
         { error: 'Ce slug existe déjà dans cette compétition' },
@@ -59,12 +73,12 @@ export async function POST(request: Request) {
       );
     }
 
-    const player = new Player({
-      ...validation.data,
-      competitionId: body.competitionId
+    const player = await prisma.player.create({
+      data: {
+        ...validation.data,
+        competitionId: body.competitionId
+      }
     });
-    
-    await player.save();
 
     return NextResponse.json(player, { status: 201 });
   } catch (error) {

@@ -34,13 +34,22 @@ export default function CreatePlayerPage() {
     setLoading(true);
 
     try {
-      // Simuler la création
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const response = await fetch('/api/admin/players', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Erreur création');
+      }
       
       // Rediriger vers la liste
       router.push('/admin/players');
     } catch (error) {
       console.error('Erreur création:', error);
+      alert('Erreur lors de la création du joueur');
     } finally {
       setLoading(false);
     }

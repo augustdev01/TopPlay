@@ -20,6 +20,7 @@ interface Player {
   bio?: string;
   photoUrl?: string;
   votesConfirmed: number;
+  percentage?: number; // Pourcentage au lieu du nombre brut
 }
 
 interface Competition {
@@ -59,11 +60,11 @@ export function PlayerCard({ player, competition, onVoteSuccess }: PlayerCardPro
               </div>
             )}
             
-            {/* Badge votes */}
+            {/* Badge pourcentage */}
             <div className="absolute top-4 right-4">
               <Badge className="bg-white/90 text-gray-900 hover:bg-white rounded-full px-3 py-1">
                 <Trophy className="w-3 h-3 mr-1" />
-                {player.votesConfirmed}
+                {player.percentage ? `${player.percentage}%` : 'N/A'}
               </Badge>
             </div>
           </div>
@@ -89,7 +90,7 @@ export function PlayerCard({ player, competition, onVoteSuccess }: PlayerCardPro
             <div className="flex space-x-2">
               <Button
                 onClick={() => setVoteModalOpen(true)}
-                className="flex-1 bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-lg hover:shadow-xl transition-all"
+                className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all"
               >
                 <Vote className="w-4 h-4 mr-2" />
                 Voter ({competition.votePrice} FCFA)
@@ -99,7 +100,7 @@ export function PlayerCard({ player, competition, onVoteSuccess }: PlayerCardPro
                 asChild
                 variant="outline" 
                 size="icon"
-                className="rounded-xl border-2 hover:bg-gray-50"
+                className="rounded-xl border-2 hover:bg-gray-50 hover:text-gray-900"
               >
                 <Link href={`/competitions/${competition.slug}/players/${player.slug}`}>
                   <Eye className="w-4 h-4" />
