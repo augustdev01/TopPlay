@@ -1,16 +1,21 @@
-'use client';
+"use client";
 
-import { motion } from 'framer-motion';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { 
-  Shield, 
-  Vote, 
-  CreditCard, 
-  Users, 
+import { motion } from "framer-motion";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Vote,
+  CreditCard,
   AlertTriangle,
   CheckCircle,
-  XCircle
-} from 'lucide-react';
+  XCircle,
+  Trophy,
+} from "lucide-react";
 
 export default function RulesPage() {
   return (
@@ -23,9 +28,10 @@ export default function RulesPage() {
           className="text-center mb-16"
         >
           <h1 className="text-5xl font-bold text-gray-900 mb-6">
-            Règlement 
+            Règlement
             <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-              {" "}VoteSport
+              {" "}
+              VoteSport
             </span>
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
@@ -46,7 +52,9 @@ export default function RulesPage() {
                   <Vote className="w-6 h-6 mr-3 text-indigo-600" />
                   Règles de vote
                 </CardTitle>
-                <CardDescription>Comment fonctionne le système de vote</CardDescription>
+                <CardDescription>
+                  Comment fonctionne le système de vote
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid md:grid-cols-2 gap-6">
@@ -63,7 +71,7 @@ export default function RulesPage() {
                       <li>• Suivre les classements en temps réel</li>
                     </ul>
                   </div>
-                  
+
                   <div className="space-y-4">
                     <h4 className="font-bold text-red-700 flex items-center">
                       <XCircle className="w-5 h-5 mr-2" />
@@ -97,16 +105,23 @@ export default function RulesPage() {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-6">
-                  <h4 className="font-bold text-emerald-800 mb-3">Prix du vote</h4>
-                  <div className="text-3xl font-bold text-emerald-600 mb-2">200 FCFA</div>
+                  <h4 className="font-bold text-emerald-800 mb-3">
+                    Prix du vote
+                  </h4>
+                  <div className="text-3xl font-bold text-emerald-600 mb-2">
+                    200 FCFA
+                  </div>
                   <p className="text-emerald-700 text-sm">
-                    Prix fixe par vote, quel que soit le joueur ou la compétition
+                    Prix fixe par vote, quel que soit le joueur ou la
+                    compétition
                   </p>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
-                    <h4 className="font-bold text-gray-900 mb-3">Méthodes de paiement</h4>
+                    <h4 className="font-bold text-gray-900 mb-3">
+                      Méthodes de paiement
+                    </h4>
                     <ul className="space-y-2 text-sm text-gray-600">
                       <li>• Wave Business (recommandé)</li>
                       <li>• Paiement mobile sécurisé</li>
@@ -114,9 +129,11 @@ export default function RulesPage() {
                       <li>• Support 24/7</li>
                     </ul>
                   </div>
-                  
+
                   <div>
-                    <h4 className="font-bold text-gray-900 mb-3">Politique de remboursement</h4>
+                    <h4 className="font-bold text-gray-900 mb-3">
+                      Politique de remboursement
+                    </h4>
                     <ul className="space-y-2 text-sm text-gray-600">
                       <li>• Remboursement en cas d'erreur technique</li>
                       <li>• Délai de traitement : 3-5 jours ouvrés</li>
@@ -145,26 +162,33 @@ export default function RulesPage() {
               <CardContent className="space-y-6">
                 <div className="space-y-4">
                   <div>
-                    <h4 className="font-bold text-gray-900 mb-2">Éligibilité des joueurs</h4>
+                    <h4 className="font-bold text-gray-900 mb-2">
+                      Éligibilité des joueurs
+                    </h4>
                     <p className="text-gray-600 text-sm">
-                      Tous les joueurs inscrits dans une compétition active peuvent recevoir des votes. 
-                      Les critères d'éligibilité sont définis par les organisateurs de chaque compétition.
+                      Tous les joueurs inscrits dans une compétition active
+                      peuvent recevoir des votes. Les critères d'éligibilité
+                      sont définis par les organisateurs de chaque compétition.
                     </p>
                   </div>
 
                   <div>
-                    <h4 className="font-bold text-gray-900 mb-2">Durée des compétitions</h4>
+                    <h4 className="font-bold text-gray-900 mb-2">
+                      Durée des compétitions
+                    </h4>
                     <p className="text-gray-600 text-sm">
-                      Chaque compétition a une date de début et de fin clairement définies. 
-                      Les votes ne sont acceptés que pendant la période active de la compétition.
+                      Chaque compétition a une date de début et de fin
+                      clairement définies. Les votes ne sont acceptés que
+                      pendant la période active de la compétition.
                     </p>
                   </div>
 
                   <div>
                     <h4 className="font-bold text-gray-900 mb-2">Classement</h4>
                     <p className="text-gray-600 text-sm">
-                      Le classement est basé uniquement sur le nombre de votes confirmés (payés). 
-                      Il est mis à jour en temps réel et visible par tous.
+                      Le classement est basé uniquement sur le nombre de votes
+                      confirmés (payés). Il est mis à jour en temps réel et
+                      visible par tous.
                     </p>
                   </div>
                 </div>
@@ -188,26 +212,33 @@ export default function RulesPage() {
               <CardContent>
                 <div className="space-y-4">
                   <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
-                    <h4 className="font-bold text-orange-800 mb-2">Responsabilité</h4>
+                    <h4 className="font-bold text-orange-800 mb-2">
+                      Responsabilité
+                    </h4>
                     <p className="text-orange-700 text-sm">
-                      VoteSport est une plateforme de vote et ne garantit aucun résultat sportif. 
-                      Les votes expriment uniquement le soutien des fans.
+                      VoteSport est une plateforme de vote et ne garantit aucun
+                      résultat sportif. Les votes expriment uniquement le
+                      soutien des fans.
                     </p>
                   </div>
 
                   <div className="bg-red-50 border border-red-200 rounded-xl p-4">
                     <h4 className="font-bold text-red-800 mb-2">Fraude</h4>
                     <p className="text-red-700 text-sm">
-                      Toute tentative de fraude ou de manipulation sera sanctionnée par 
-                      l'exclusion définitive de la plateforme et pourra faire l'objet de poursuites.
+                      Toute tentative de fraude ou de manipulation sera
+                      sanctionnée par l'exclusion définitive de la plateforme et
+                      pourra faire l'objet de poursuites.
                     </p>
                   </div>
 
                   <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-                    <h4 className="font-bold text-blue-800 mb-2">Données personnelles</h4>
+                    <h4 className="font-bold text-blue-800 mb-2">
+                      Données personnelles
+                    </h4>
                     <p className="text-blue-700 text-sm">
-                      Vos données sont protégées conformément à la réglementation en vigueur. 
-                      Consultez notre politique de confidentialité pour plus d'informations.
+                      Vos données sont protégées conformément à la
+                      réglementation en vigueur. Consultez notre politique de
+                      confidentialité pour plus d'informations.
                     </p>
                   </div>
                 </div>

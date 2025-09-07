@@ -83,6 +83,7 @@ export async function POST(request: Request) {
             submittedAt: new Date().toISOString(),
             userAgent: request.headers.get("user-agent"),
           },
+          customerPhone: order.customerPhone ?? undefined,
           validatedAt: new Date(),
         },
       });

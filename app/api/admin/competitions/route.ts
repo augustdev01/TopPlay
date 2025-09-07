@@ -26,7 +26,7 @@ export async function GET() {
       };
     });
  */
-    const enrichedCompetitions = competitions.map((comp) =>
+    const enrichedCompetitions = competitions.map((comp: any) =>
       mapCompetition(comp)
     );
 

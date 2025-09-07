@@ -9,21 +9,25 @@ export async function GET() {
     oneWeekAgo.setDate(startOfToday.getDate() - 7);
 
     // Stats
-    const [
-      totalVotesAgg,
-      activeCompetitions,
-      totalPlayers,
-      pendingTransactions,
-    ] = await Promise.all([
-      prisma.player.aggregate({
-        _sum: { votesConfirmed: true },
-      }),
-      prisma.competition.count({ where: { status: "active" } }),
-      prisma.player.count(),
-      prisma.transaction.count({ where: { status: "pending" } }),
-    ]);
+    const [activeCompetitions, totalPlayers, pendingTransactions] =
+      await Promise.all([
+        prisma.player.aggregate({
+          _sum: { votesConfirmed: true },
+        }),
+        prisma.competition.count({ where: { status: "active" } }),
+        prisma.player.count(),
+        prisma.transaction.count({ where: { status: "pending" } }),
+      ]);
 
-    const totalVotes = totalVotesAgg._sum.votesConfirmed ?? 0;
+    const totalRevenueAgg = await prisma.transaction.aggregate({
+      _sum: { amount: true },
+    });
+
+    const totalRevenue = totalRevenueAgg._sum.amount ?? 0;
+
+    const totalVotesAgg = await prisma.player.aggregate({
+      _sum: { votesConfirmed: true }, // ⚠ amount n’existe pas ici
+    });
 
     // Top compétition active
     const topCompetition = await prisma.competition.findFirst({
@@ -47,11 +51,11 @@ export async function GET() {
 
     return NextResponse.json({
       stats: {
-        totalVotes,
-        totalRevenue: totalVotesAgg?._sum?.amount ?? 0,
-        activeCompetitions,
-        totalPlayers,
-        pendingTransactions,
+        totalVotes: totalVotesAgg,
+        totalRevenue: totalRevenue,
+        activeCompetitions: activeCompetitions,
+        totalPlayers: totalPlayers,
+        pendingTransactions: pendingTransactions,
         // weeklyGrowth: weeklyGrowth.toFixed(1),
         topCompetition: topCompetition?.name ?? "N/A",
       },

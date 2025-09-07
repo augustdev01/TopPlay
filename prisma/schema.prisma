@@ -87,7 +87,7 @@ model Order {
 
 model Transaction {
   id            String   @id @default(cuid())
-  orderId       String
+  orderId       String   @unique
   competitionId String
   playerId      String
   playerName    String
@@ -99,6 +99,7 @@ model Transaction {
   provider      String   @default("WAVE")
   source        String   // callback, user_input, admin, api_verification
   raw           Json?
+  customerPhone  String?
   validatedAt   DateTime?
   createdAt     DateTime @default(now())
 
