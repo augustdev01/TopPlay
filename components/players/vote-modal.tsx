@@ -1,12 +1,18 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Vote, CreditCard, Smartphone, ExternalLink } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Vote, CreditCard, Smartphone, ExternalLink } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface Player {
   _id: string;
@@ -28,63 +34,87 @@ interface VoteModalProps {
   onOpenChange: (open: boolean) => void;
   player: Player;
   competition: Competition;
-  onSuccess?: () => void;
+  // Au lieu de juste onSuccess, on peut renvoyer l'ordre créé
+  onSuccess?: (orderData: {
+    orderId: string;
+    state: string;
+    customerPhone: string;
+  }) => void;
 }
 
-export function VoteModal({ open, onOpenChange, player, competition, onSuccess }: VoteModalProps) {
-  const [customerPhone, setCustomerPhone] = useState('');
+export function VoteModal({
+  open,
+  onOpenChange,
+  player,
+  competition,
+  onSuccess,
+}: VoteModalProps) {
+  const [customerPhone, setCustomerPhone] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Stocker orderId et state après création
+  const [orderData, setOrderData] = useState<{
+    orderId: string;
+    state: string;
+  } | null>(null);
 
   const handleVote = async () => {
     if (!customerPhone.trim()) {
-      alert('Veuillez saisir votre numéro de téléphone');
+      alert("Veuillez saisir votre numéro de téléphone");
       return;
     }
 
     setLoading(true);
-    
+
     try {
-      const response = await fetch('/api/vote/create-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/vote/create-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           competitionSlug: competition.slug,
           playerSlug: player.slug,
-          customerPhone: customerPhone.trim()
-        })
+          customerPhone: customerPhone.trim(),
+        }),
       });
 
       if (!response.ok) {
-        throw new Error('Erreur création commande');
+        throw new Error("Erreur création commande");
       }
 
       const data = await response.json();
-      
+
       // Ouvrir le lien Wave dans un nouvel onglet/app
-      window.open(data.wavePaymentUrl, '_blank');
-      
-      // Rediriger vers la page de confirmation après un court délai
-      setTimeout(() => {
-        window.location.href = `/paiement/confirmation?orderId=${data.orderId}&state=${data.state}`;
-      }, 1000);
-      
+      setOrderData({ orderId: data.orderId, state: data.state });
+      localStorage.setItem("currentOrder", JSON.stringify(data));
+
+      // Fermer le modal avant d’ouvrir Wave
+      onOpenChange(false);
+
+      onSuccess?.(data);
+      window.open(data.wavePaymentUrl, "_blank");
     } catch (error) {
-      console.error('Erreur vote:', error);
-      alert('Erreur lors de la création du vote');
+      console.error("Erreur vote:", error);
+      alert("Erreur lors de la création du vote");
     } finally {
       setLoading(false);
     }
   };
 
   const formatPhoneNumber = (value: string) => {
-    // Nettoyer et formater le numéro sénégalais
-    const cleaned = value.replace(/\D/g, '');
-    if (cleaned.startsWith('221')) {
+    // Nettoyer et formater le numéro ivoirien
+    const cleaned = value.replace(/\D/g, ""); // garder que les chiffres
+
+    // Si le numéro commence déjà par 225 et fait 12 chiffres → ok
+    if (cleaned.startsWith("225") && cleaned.length === 12) {
       return cleaned;
     }
-    if (cleaned.startsWith('7') || cleaned.startsWith('3')) {
-      return '221' + cleaned;
+
+    // Si le numéro est donné en format local (10 chiffres) → ajouter 225 devant
+    if (cleaned.length === 10) {
+      return "225" + cleaned;
     }
+
+    // Sinon on retourne tel quel
     return cleaned;
   };
 
@@ -120,7 +150,9 @@ export function VoteModal({ open, onOpenChange, player, competition, onSuccess }
               )}
             </div>
             <div className="flex-1">
-              <div className="font-semibold">{player.firstName} {player.lastName}</div>
+              <div className="font-semibold">
+                {player.firstName} {player.lastName}
+              </div>
               <div className="text-sm text-gray-600">{competition.name}</div>
             </div>
           </div>
@@ -154,13 +186,16 @@ export function VoteModal({ open, onOpenChange, player, competition, onSuccess }
               />
             </div>
             <p className="text-xs text-gray-500">
-              Ce numéro sera pré-rempli dans l'app Wave pour faciliter le paiement
+              Ce numéro sera pré-rempli dans l'app Wave pour faciliter le
+              paiement
             </p>
           </div>
 
           {/* Process Explanation */}
           <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-            <h4 className="font-medium text-blue-900 mb-2">Comment ça marche :</h4>
+            <h4 className="font-medium text-blue-900 mb-2">
+              Comment ça marche :
+            </h4>
             <ol className="text-sm text-blue-700 space-y-1">
               <li>1. Cliquez sur "Payer avec Wave"</li>
               <li>2. L'app Wave s'ouvre avec le montant pré-rempli</li>
@@ -193,7 +228,7 @@ export function VoteModal({ open, onOpenChange, player, competition, onSuccess }
               ) : (
                 <ExternalLink className="w-4 h-4 mr-2" />
               )}
-              {loading ? 'Préparation...' : 'Payer avec Wave'}
+              {loading ? "Préparation..." : "Payer avec Wave"}
             </Button>
           </div>
         </div>

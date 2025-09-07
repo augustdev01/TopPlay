@@ -31,7 +31,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { mockPlayers, mockCompetitions } from "@/lib/mock-data";
+// import { mockPlayers, mockCompetitions } from "@/lib/mock-data";
 
 export default function AdminPlayersPage() {
   const [players, setPlayers] = useState<any[]>([]);
@@ -41,24 +41,41 @@ export default function AdminPlayersPage() {
   const [selectedTeam, setSelectedTeam] = useState("");
 
   useEffect(() => {
-    // Enrichir les données des joueurs avec les infos de compétition
-    const enrichedPlayers = mockPlayers.map((player) => {
-      const competition = mockCompetitions.find(
-        (c) => c._id === player.competitionId
-      );
-      return {
-        ...player,
-        competition: competition?.name || "Compétition inconnue",
-        competitionSlug: competition?.slug || "",
-        competitionStatus: competition?.status || "draft",
-        revenue: player.votesConfirmed * (competition?.votePrice || 200),
-      };
-    });
+    const fetchPlayers = async () => {
+      try {
+        setLoading(true);
 
-    setTimeout(() => {
-      setPlayers(enrichedPlayers);
-      setLoading(false);
-    }, 800);
+        // Récupérer toutes les compétitions actives
+        const compRes = await fetch("/api/admin/competitions");
+        const competitions = await compRes.json();
+
+        // Récupérer tous les joueurs
+        const playersRes = await fetch("/api/admin/players"); // à créer côté API
+        const playersData = await playersRes.json();
+
+        // Enrichir les joueurs avec infos de compétition
+        const enrichedPlayers = playersData.map((player: any) => {
+          const competition = competitions.find(
+            (c: any) => c.id === player.competitionId
+          );
+          return {
+            ...player,
+            competition: competition?.name || "Compétition inconnue",
+            competitionSlug: competition?.slug || "",
+            competitionStatus: competition?.status || "draft",
+            revenue: player.votesConfirmed * (competition?.votePrice || 200),
+          };
+        });
+
+        setPlayers(enrichedPlayers);
+      } catch (error) {
+        console.error("Erreur chargement joueurs:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPlayers();
   }, []);
 
   const competitions = Array.from(new Set(players.map((p) => p.competition)));
@@ -157,9 +174,9 @@ export default function AdminPlayersPage() {
                   <SelectValue placeholder="Toutes les compétitions" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Toutes les compétitions</SelectItem>
-                  {competitions.map((comp) => (
-                    <SelectItem key={comp} value={comp}>
+                  <SelectItem value="all">Toutes les compétitions</SelectItem>
+                  {competitions.map((comp, index) => (
+                    <SelectItem key={index} value={comp}>
                       {comp}
                     </SelectItem>
                   ))}
@@ -171,9 +188,9 @@ export default function AdminPlayersPage() {
                   <SelectValue placeholder="Toutes les équipes" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Toutes les équipes</SelectItem>
-                  {teams.map((team) => (
-                    <SelectItem key={team} value={team}>
+                  <SelectItem value="all">Toutes les équipes</SelectItem>
+                  {teams.map((team, index) => (
+                    <SelectItem key={index} value={team}>
                       {team}
                     </SelectItem>
                   ))}
@@ -198,7 +215,7 @@ export default function AdminPlayersPage() {
       >
         {filteredPlayers.map((player, index) => (
           <motion.div
-            key={player._id}
+            key={index}
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.3 + index * 0.05 }}

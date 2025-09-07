@@ -1,9 +1,15 @@
-'use client';
+"use client";
 
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
-import { Search, Filter } from 'lucide-react';
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Search, Filter } from "lucide-react";
 
 interface FiltersState {
   search: string;
@@ -19,11 +25,16 @@ interface PlayersFiltersProps {
   positions: string[];
 }
 
-export function PlayersFilters({ filters, onFiltersChange, teams, positions }: PlayersFiltersProps) {
+export function PlayersFilters({
+  filters,
+  onFiltersChange,
+  teams,
+  positions,
+}: PlayersFiltersProps) {
   const updateFilter = (key: keyof FiltersState, value: string) => {
     onFiltersChange({
       ...filters,
-      [key]: value
+      [key]: value,
     });
   };
 
@@ -33,7 +44,7 @@ export function PlayersFilters({ filters, onFiltersChange, teams, positions }: P
         <Filter className="w-5 h-5 text-indigo-600" />
         <h3 className="font-semibold text-gray-900">Filtres et recherche</h3>
       </div>
-      
+
       <div className="grid md:grid-cols-4 gap-4">
         {/* Search */}
         <div>
@@ -46,7 +57,7 @@ export function PlayersFilters({ filters, onFiltersChange, teams, positions }: P
               id="search"
               placeholder="Nom du joueur..."
               value={filters.search}
-              onChange={(e) => updateFilter('search', e.target.value)}
+              onChange={(e) => updateFilter("search", e.target.value)}
               className="pl-10 rounded-xl"
             />
           </div>
@@ -55,17 +66,19 @@ export function PlayersFilters({ filters, onFiltersChange, teams, positions }: P
         {/* Team Filter */}
         <div>
           <Label className="text-sm font-medium">Équipe</Label>
-          <Select 
-            value={filters.team} 
-            onValueChange={(value) => updateFilter('team', value)}
+          <Select
+            value={filters.team}
+            onValueChange={(value) => updateFilter("team", value)}
           >
             <SelectTrigger className="rounded-xl mt-1">
               <SelectValue placeholder="Toutes les équipes" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Toutes les équipes</SelectItem>
-              {teams.map(team => (
-                <SelectItem key={team} value={team}>{team}</SelectItem>
+              <SelectItem value="all">Toutes les équipes</SelectItem>
+              {teams.map((team) => (
+                <SelectItem key={team} value={team}>
+                  {team}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -74,17 +87,19 @@ export function PlayersFilters({ filters, onFiltersChange, teams, positions }: P
         {/* Position Filter */}
         <div>
           <Label className="text-sm font-medium">Position</Label>
-          <Select 
-            value={filters.position} 
-            onValueChange={(value) => updateFilter('position', value)}
+          <Select
+            value={filters.position}
+            onValueChange={(value) => updateFilter("position", value)}
           >
             <SelectTrigger className="rounded-xl mt-1">
               <SelectValue placeholder="Toutes les positions" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Toutes les positions</SelectItem>
-              {positions.map(position => (
-                <SelectItem key={position} value={position}>{position}</SelectItem>
+              <SelectItem value="all">Toutes les positions</SelectItem>
+              {positions.map((position) => (
+                <SelectItem key={position} value={position}>
+                  {position}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -93,9 +108,9 @@ export function PlayersFilters({ filters, onFiltersChange, teams, positions }: P
         {/* Sort */}
         <div>
           <Label className="text-sm font-medium">Trier par</Label>
-          <Select 
-            value={filters.sortBy} 
-            onValueChange={(value) => updateFilter('sortBy', value)}
+          <Select
+            value={filters.sortBy}
+            onValueChange={(value) => updateFilter("sortBy", value)}
           >
             <SelectTrigger className="rounded-xl mt-1">
               <SelectValue />

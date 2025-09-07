@@ -11,10 +11,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Trophy, ArrowLeft } from "lucide-react";
+import { Trophy, ArrowLeft, Users, Vote } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { CompetitionEntity } from "@/types/entities/entities";
 
 interface Competition {
   _id: string;
@@ -42,7 +43,9 @@ export default function VotePage() {
   const params = useParams();
   const competitionSlug = params.slug as string;
 
-  const [competition, setCompetition] = useState<Competition | null>(null);
+  const [competition, setCompetition] = useState<CompetitionEntity | null>(
+    null
+  );
   const [players, setPlayers] = useState<Player[]>([]);
   const [filteredPlayers, setFilteredPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
@@ -171,10 +174,13 @@ export default function VotePage() {
     );
   }
 
-  const uniqueTeams = [...new Set(players.map((p) => p.team).filter(Boolean))];
-  const uniquePositions = [
-    ...new Set(players.map((p) => p.position).filter(Boolean)),
-  ];
+  const uniqueTeams = Array.from(
+    new Set(players.map((p) => p.team).filter((t): t is string => !!t))
+  );
+
+  const uniquePositions = Array.from(
+    new Set(players.map((p) => p.position).filter((p): p is string => !!p))
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50">

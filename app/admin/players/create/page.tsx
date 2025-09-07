@@ -1,55 +1,85 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Users, ArrowLeft, Save, Upload, Image } from 'lucide-react';
-import { motion } from 'framer-motion';
-import Link from 'next/link';
-import { mockCompetitions } from '@/lib/mock-data';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Users, ArrowLeft, Save, Upload, Image } from "lucide-react";
+import { motion } from "framer-motion";
+import Link from "next/link";
+import { CompetitionEntity } from "@/types/entities/entities";
+// import { mockCompetitions } from "@/lib/mock-data";
 
 export default function CreatePlayerPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [competitions, setCompetitions] = useState(mockCompetitions);
+  const [competitions, setCompetitions] = useState<CompetitionEntity[]>([]);
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    slug: '',
-    age: '',
-    team: '',
-    position: '',
-    bio: '',
-    photoUrl: '',
-    competitionId: ''
+    firstName: "",
+    lastName: "",
+    slug: "",
+    age: 0,
+    team: "",
+    position: "",
+    bio: "",
+    photoUrl: "",
+    competitionId: "",
   });
+
+  useEffect(() => {
+    const fetchCompetitions = async () => {
+      try {
+        const res = await fetch("/api/admin/competitions");
+        if (!res.ok) throw new Error("Erreur récupération compétitions");
+        const data = await res.json();
+        setCompetitions(data);
+      } catch (error) {
+        console.error("Erreur API:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCompetitions();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const response = await fetch('/api/admin/players', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+      const response = await fetch("/api/admin/players", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
       });
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Erreur création');
+        throw new Error(error.error || "Erreur création");
       }
-      
+
       // Rediriger vers la liste
-      router.push('/admin/players');
+      router.push("/admin/players");
     } catch (error) {
-      console.error('Erreur création:', error);
-      alert('Erreur lors de la création du joueur');
+      console.error("Erreur création:", error);
+      alert("Erreur lors de la création du joueur");
     } finally {
       setLoading(false);
     }
@@ -58,21 +88,28 @@ export default function CreatePlayerPage() {
   const generateSlug = (firstName: string, lastName: string) => {
     return `${firstName} ${lastName}`
       .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
+      .replace(/[^a-z0-9\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-")
       .trim();
   };
 
-  const handleNameChange = (field: 'firstName' | 'lastName', value: string) => {
+  const handleNameChange = (field: "firstName" | "lastName", value: string) => {
     const newData = { ...formData, [field]: value };
     newData.slug = generateSlug(newData.firstName, newData.lastName);
     setFormData(newData);
   };
 
   const positions = [
-    'Gardien', 'Défenseur', 'Milieu', 'Attaquant', 'Ailier', 
-    'Libéro', 'Arrière latéral', 'Milieu défensif', 'Milieu offensif'
+    "Gardien",
+    "Défenseur",
+    "Milieu",
+    "Attaquant",
+    "Ailier",
+    "Libéro",
+    "Arrière latéral",
+    "Milieu défensif",
+    "Milieu offensif",
   ];
 
   return (
@@ -85,7 +122,9 @@ export default function CreatePlayerPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Nouveau joueur</h1>
-            <p className="text-gray-600 mt-1">Ajoutez un nouveau joueur à une compétition</p>
+            <p className="text-gray-600 mt-1">
+              Ajoutez un nouveau joueur à une compétition
+            </p>
           </div>
           <Button asChild variant="outline" className="rounded-xl">
             <Link href="/admin/players">
@@ -117,12 +156,17 @@ export default function CreatePlayerPage() {
               {/* Compétition */}
               <div>
                 <Label htmlFor="competition">Compétition *</Label>
-                <Select value={formData.competitionId} onValueChange={(value) => setFormData(prev => ({ ...prev, competitionId: value }))}>
+                <Select
+                  value={formData.competitionId}
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({ ...prev, competitionId: value }))
+                  }
+                >
                   <SelectTrigger className="rounded-xl mt-1">
                     <SelectValue placeholder="Sélectionnez une compétition" />
                   </SelectTrigger>
                   <SelectContent>
-                    {competitions.map(comp => (
+                    {competitions.map((comp) => (
                       <SelectItem key={comp._id} value={comp._id}>
                         {comp.name} ({comp.status})
                       </SelectItem>
@@ -138,7 +182,9 @@ export default function CreatePlayerPage() {
                   <Input
                     id="firstName"
                     value={formData.firstName}
-                    onChange={(e) => handleNameChange('firstName', e.target.value)}
+                    onChange={(e) =>
+                      handleNameChange("firstName", e.target.value)
+                    }
                     className="rounded-xl mt-1"
                     placeholder="Mamadou"
                     required
@@ -150,7 +196,9 @@ export default function CreatePlayerPage() {
                   <Input
                     id="lastName"
                     value={formData.lastName}
-                    onChange={(e) => handleNameChange('lastName', e.target.value)}
+                    onChange={(e) =>
+                      handleNameChange("lastName", e.target.value)
+                    }
                     className="rounded-xl mt-1"
                     placeholder="Diallo"
                     required
@@ -164,7 +212,9 @@ export default function CreatePlayerPage() {
                 <Input
                   id="slug"
                   value={formData.slug}
-                  onChange={(e) => setFormData(prev => ({ ...prev, slug: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, slug: e.target.value }))
+                  }
                   className="rounded-xl mt-1"
                   placeholder="mamadou-diallo"
                   required
@@ -179,7 +229,12 @@ export default function CreatePlayerPage() {
                     id="age"
                     type="number"
                     value={formData.age}
-                    onChange={(e) => setFormData(prev => ({ ...prev, age: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        age: e.target.value ? Number(e.target.value) : 0,
+                      }))
+                    }
                     className="rounded-xl mt-1"
                     min="16"
                     max="50"
@@ -192,7 +247,9 @@ export default function CreatePlayerPage() {
                   <Input
                     id="team"
                     value={formData.team}
-                    onChange={(e) => setFormData(prev => ({ ...prev, team: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, team: e.target.value }))
+                    }
                     className="rounded-xl mt-1"
                     placeholder="ASC Diaraf"
                   />
@@ -200,13 +257,20 @@ export default function CreatePlayerPage() {
 
                 <div>
                   <Label htmlFor="position">Position</Label>
-                  <Select value={formData.position} onValueChange={(value) => setFormData(prev => ({ ...prev, position: value }))}>
+                  <Select
+                    value={formData.position}
+                    onValueChange={(value) =>
+                      setFormData((prev) => ({ ...prev, position: value }))
+                    }
+                  >
                     <SelectTrigger className="rounded-xl mt-1">
                       <SelectValue placeholder="Sélectionnez" />
                     </SelectTrigger>
                     <SelectContent>
-                      {positions.map(pos => (
-                        <SelectItem key={pos} value={pos}>{pos}</SelectItem>
+                      {positions.map((pos) => (
+                        <SelectItem key={pos} value={pos}>
+                          {pos}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -220,11 +284,20 @@ export default function CreatePlayerPage() {
                   <Input
                     id="photoUrl"
                     value={formData.photoUrl}
-                    onChange={(e) => setFormData(prev => ({ ...prev, photoUrl: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        photoUrl: e.target.value,
+                      }))
+                    }
                     className="rounded-xl flex-1"
                     placeholder="https://images.pexels.com/..."
                   />
-                  <Button type="button" variant="outline" className="rounded-xl">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="rounded-xl"
+                  >
                     <Upload className="w-4 h-4 mr-2" />
                     Upload
                   </Button>
@@ -237,7 +310,7 @@ export default function CreatePlayerPage() {
                         alt="Aperçu"
                         className="w-full h-full object-cover"
                         onError={(e) => {
-                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.style.display = "none";
                         }}
                       />
                     </div>
@@ -251,7 +324,9 @@ export default function CreatePlayerPage() {
                 <Textarea
                   id="bio"
                   value={formData.bio}
-                  onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, bio: e.target.value }))
+                  }
                   className="rounded-xl mt-1"
                   rows={4}
                   placeholder="Biographie du joueur, ses qualités, son parcours..."
@@ -269,19 +344,28 @@ export default function CreatePlayerPage() {
                 </Button>
                 <Button
                   type="submit"
-                  disabled={loading || !formData.name || !formData.firstName || !formData.lastName || !formData.competitionId}
+                  disabled={
+                    loading ||
+                    !formData.firstName ||
+                    !formData.lastName ||
+                    !formData.competitionId
+                  }
                   className="bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-lg"
                 >
                   {loading ? (
                     <motion.div
                       animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      transition={{
+                        duration: 1,
+                        repeat: Infinity,
+                        ease: "linear",
+                      }}
                       className="w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"
                     />
                   ) : (
                     <Save className="w-4 h-4 mr-2" />
                   )}
-                  {loading ? 'Création...' : 'Créer le joueur'}
+                  {loading ? "Création..." : "Créer le joueur"}
                 </Button>
               </div>
             </form>

@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+/* import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import { Order } from '@/lib/models/Order';
 import { Player } from '@/lib/models/Player';
@@ -57,8 +57,8 @@ export async function POST(request: Request) {
     if (status === 'success' && transaction_id) {
       // Paiement confirmé automatiquement
       await confirmOrderPayment(order, transaction_id, 'callback', body);
-      
-      return NextResponse.json({ 
+
+      return NextResponse.json({
         message: 'Paiement confirmé',
         status: 'success'
       });
@@ -68,7 +68,7 @@ export async function POST(request: Request) {
       order.callbackData = body;
       await order.save();
 
-      return NextResponse.json({ 
+      return NextResponse.json({
         message: 'Paiement échoué',
         status: 'failed'
       });
@@ -84,13 +84,13 @@ export async function POST(request: Request) {
 }
 
 async function confirmOrderPayment(
-  order: any, 
-  transactionRef: string, 
-  source: string, 
+  order: any,
+  transactionRef: string,
+  source: string,
   rawData: any
 ) {
   const session = await mongoose.startSession();
-  
+
   try {
     await session.withTransaction(async () => {
       // Marquer l'order comme payée
@@ -102,8 +102,8 @@ async function confirmOrderPayment(
       // Incrémenter les votes confirmés
       await Player.findByIdAndUpdate(
         order.playerId,
-        { 
-          $inc: { 
+        {
+          $inc: {
             votesConfirmed: 1,
             votesPending: -1
           }
@@ -131,4 +131,4 @@ async function confirmOrderPayment(
   } finally {
     await session.endSession();
   }
-}
+} */

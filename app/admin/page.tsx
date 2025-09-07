@@ -1,23 +1,29 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { 
-  Trophy, 
-  Users, 
-  CreditCard, 
-  TrendingUp, 
+import { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Trophy,
+  Users,
+  CreditCard,
+  TrendingUp,
   Vote,
   DollarSign,
   Activity,
-  Calendar,
   Crown,
-  ArrowUpRight
-} from 'lucide-react';
-import { motion } from 'framer-motion';
-import Link from 'next/link';
+  ArrowUpRight,
+  BarChart3,
+} from "lucide-react";
+import { motion } from "framer-motion";
+import Link from "next/link";
 
 // Mock data pour la démo
 const mockStats = {
@@ -28,72 +34,93 @@ const mockStats = {
   pendingTransactions: 23,
   todayVotes: 187,
   weeklyGrowth: 15.3,
-  topCompetition: 'Championnat de Démonstration'
+  topCompetition: "Championnat de Démonstration",
 };
 
 const mockRecentTransactions = [
   {
-    id: '1',
-    playerName: 'Mamadou Diallo',
-    competition: 'Championnat Demo',
+    id: "1",
+    playerName: "Mamadou Diallo",
+    competition: "Championnat Demo",
     amount: 200,
-    status: 'confirmed',
-    time: '2 min'
+    status: "confirmed",
+    time: "2 min",
   },
   {
-    id: '2',
-    playerName: 'Omar Sall',
-    competition: 'Coupe Jeunes',
+    id: "2",
+    playerName: "Omar Sall",
+    competition: "Coupe Jeunes",
     amount: 200,
-    status: 'pending',
-    time: '5 min'
+    status: "pending",
+    time: "5 min",
   },
   {
-    id: '3',
-    playerName: 'Aminata Sow',
-    competition: 'Tournoi Féminin',
+    id: "3",
+    playerName: "Aminata Sow",
+    competition: "Tournoi Féminin",
     amount: 200,
-    status: 'confirmed',
-    time: '8 min'
-  }
+    status: "confirmed",
+    time: "8 min",
+  },
 ];
 
 const mockTopPlayers = [
   {
-    name: 'Mamadou Diallo',
-    competition: 'Championnat Demo',
+    name: "Mamadou Diallo",
+    competition: "Championnat Demo",
     votes: 245,
     revenue: 49000,
-    growth: '+12%'
+    growth: "+12%",
   },
   {
-    name: 'Omar Sall',
-    competition: 'Coupe Jeunes',
+    name: "Omar Sall",
+    competition: "Coupe Jeunes",
     votes: 178,
     revenue: 35600,
-    growth: '+8%'
+    growth: "+8%",
   },
   {
-    name: 'Aminata Sow',
-    competition: 'Tournoi Féminin',
+    name: "Aminata Sow",
+    competition: "Tournoi Féminin",
     votes: 134,
     revenue: 26800,
-    growth: '+15%'
-  }
+    growth: "+15%",
+  },
 ];
 
 export default function AdminDashboard() {
-  const [stats, setStats] = useState(mockStats);
+  const [stats, setStats] = useState<any>(null);
+  const [recentTransactions, setRecentTransactions] = useState<any[]>([]);
+  const [topPlayers, setTopPlayers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simuler le chargement
-    setTimeout(() => {
-      setLoading(false);
-    }, 1000);
+    async function fetchDashboard() {
+      try {
+        const res = await fetch("/api/admin/dashboard");
+        const data = await res.json();
+        console.log("data: ", data);
+
+        setStats(data.stats);
+        setRecentTransactions(data.recentTransactions);
+        setTopPlayers(data.topPlayers);
+      } catch (err) {
+        console.error("Erreur fetch dashboard:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchDashboard();
   }, []);
 
-  const StatCard = ({ title, value, icon: Icon, color, change, description }: any) => (
+  const StatCard = ({
+    title,
+    value,
+    icon: Icon,
+    color,
+    change,
+    description,
+  }: any) => (
     <Card className="rounded-2xl shadow-lg border-0 hover:shadow-xl transition-all duration-300">
       <CardContent className="p-6">
         <div className="flex items-center justify-between">
@@ -101,9 +128,11 @@ export default function AdminDashboard() {
             <p className="text-sm font-medium text-gray-600 mb-1">{title}</p>
             <p className="text-3xl font-bold text-gray-900">{value}</p>
             {change && (
-              <p className={`text-sm flex items-center mt-1 ${
-                change.startsWith('+') ? 'text-green-600' : 'text-red-600'
-              }`}>
+              <p
+                className={`text-sm flex items-center mt-1 ${
+                  change.startsWith("+") ? "text-green-600" : "text-red-600"
+                }`}
+              >
                 <TrendingUp className="w-3 h-3 mr-1" />
                 {change}
               </p>
@@ -112,7 +141,9 @@ export default function AdminDashboard() {
               <p className="text-xs text-gray-500 mt-1">{description}</p>
             )}
           </div>
-          <div className={`w-12 h-12 ${color} rounded-xl flex items-center justify-center`}>
+          <div
+            className={`w-12 h-12 ${color} rounded-xl flex items-center justify-center`}
+          >
             <Icon className="w-6 h-6 text-white" />
           </div>
         </div>
@@ -146,14 +177,22 @@ export default function AdminDashboard() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-            <p className="text-gray-600 mt-1">Vue d'ensemble de la plateforme VoteSport</p>
+            <p className="text-gray-600 mt-1">
+              Vue d'ensemble de la plateforme VoteSport
+            </p>
           </div>
           <div className="flex items-center space-x-3">
-            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+            <Badge
+              variant="outline"
+              className="bg-green-50 text-green-700 border-green-200"
+            >
               <Activity className="w-3 h-3 mr-1" />
               Système opérationnel
             </Badge>
-            <Button asChild className="bg-indigo-600 hover:bg-indigo-700 rounded-xl">
+            <Button
+              asChild
+              className="bg-indigo-600 hover:bg-indigo-700 rounded-xl"
+            >
               <Link href="/competitions">
                 Voir le site
                 <ArrowUpRight className="w-4 h-4 ml-2" />
@@ -172,7 +211,7 @@ export default function AdminDashboard() {
       >
         <StatCard
           title="Total des votes"
-          value={stats.totalVotes.toLocaleString()}
+          value={stats ? stats.totalVotes.toLocaleString() : "-"}
           icon={Vote}
           color="bg-gradient-to-br from-indigo-500 to-purple-500"
           change="+15.3%"
@@ -219,16 +258,23 @@ export default function AdminDashboard() {
                     <CreditCard className="w-5 h-5 mr-2" />
                     Transactions récentes
                   </CardTitle>
-                  <CardDescription>Dernières activités de paiement</CardDescription>
+                  <CardDescription>
+                    Dernières activités de paiement
+                  </CardDescription>
                 </div>
-                <Button asChild variant="outline" size="sm" className="rounded-xl">
+                <Button
+                  asChild
+                  variant="outline"
+                  size="sm"
+                  className="rounded-xl"
+                >
                   <Link href="/admin/transactions">Voir tout</Link>
                 </Button>
               </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {mockRecentTransactions.map((transaction, index) => (
+                {recentTransactions.map((transaction, index) => (
                   <motion.div
                     key={transaction.id}
                     initial={{ opacity: 0, x: -20 }}
@@ -241,23 +287,33 @@ export default function AdminDashboard() {
                         <Vote className="w-5 h-5 text-indigo-600" />
                       </div>
                       <div>
-                        <div className="font-medium text-gray-900">{transaction.playerName}</div>
-                        <div className="text-sm text-gray-600">{transaction.competition}</div>
+                        <div className="font-medium text-gray-900">
+                          {transaction.playerName}
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          {transaction.competition}
+                        </div>
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="font-bold text-gray-900">{transaction.amount} FCFA</div>
+                      <div className="font-bold text-gray-900">
+                        {transaction.amount} FCFA
+                      </div>
                       <div className="flex items-center space-x-2">
-                        <Badge 
+                        <Badge
                           className={`text-xs ${
-                            transaction.status === 'confirmed' 
-                              ? 'bg-green-100 text-green-700' 
-                              : 'bg-orange-100 text-orange-700'
+                            transaction.status === "confirmed"
+                              ? "bg-green-100 text-green-700"
+                              : "bg-orange-100 text-orange-700"
                           }`}
                         >
-                          {transaction.status === 'confirmed' ? 'Confirmé' : 'En attente'}
+                          {transaction.status === "confirmed"
+                            ? "Confirmé"
+                            : "En attente"}
                         </Badge>
-                        <span className="text-xs text-gray-500">il y a {transaction.time}</span>
+                        <span className="text-xs text-gray-500">
+                          il y a {transaction.time}
+                        </span>
                       </div>
                     </div>
                   </motion.div>
@@ -283,24 +339,37 @@ export default function AdminDashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {mockTopPlayers.map((player, index) => (
-                  <div key={index} className="flex items-center justify-between">
+                {topPlayers.map((player, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between"
+                  >
                     <div className="flex items-center space-x-3">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                        index === 0 ? 'bg-yellow-100 text-yellow-700' :
-                        index === 1 ? 'bg-gray-100 text-gray-700' :
-                        'bg-amber-100 text-amber-700'
-                      }`}>
+                      <div
+                        className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                          index === 0
+                            ? "bg-yellow-100 text-yellow-700"
+                            : index === 1
+                            ? "bg-gray-100 text-gray-700"
+                            : "bg-amber-100 text-amber-700"
+                        }`}
+                      >
                         {index + 1}
                       </div>
                       <div>
                         <div className="font-medium text-sm">{player.name}</div>
-                        <div className="text-xs text-gray-500">{player.competition}</div>
+                        <div className="text-xs text-gray-500">
+                          {player.competition}
+                        </div>
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-sm font-bold text-indigo-600">{player.votes}</div>
-                      <div className="text-xs text-green-600">{player.growth}</div>
+                      <div className="text-sm font-bold text-indigo-600">
+                        {player.votes}
+                      </div>
+                      <div className="text-xs text-green-600">
+                        {player.growth}
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -319,29 +388,46 @@ export default function AdminDashboard() {
         <Card className="rounded-2xl shadow-lg border-0">
           <CardHeader>
             <CardTitle>Actions rapides</CardTitle>
-            <CardDescription>Raccourcis vers les tâches courantes</CardDescription>
+            <CardDescription>
+              Raccourcis vers les tâches courantes
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid md:grid-cols-4 gap-4">
-              <Button asChild className="h-20 flex-col bg-indigo-600 hover:bg-indigo-700 rounded-xl">
+              <Button
+                asChild
+                className="h-20 flex-col bg-indigo-600 hover:bg-indigo-700 rounded-xl"
+              >
                 <Link href="/admin/competitions">
                   <Trophy className="w-6 h-6 mb-2" />
                   <span className="text-sm">Nouvelle compétition</span>
                 </Link>
               </Button>
-              <Button asChild variant="outline" className="h-20 flex-col rounded-xl border-2">
+              <Button
+                asChild
+                variant="outline"
+                className="h-20 flex-col rounded-xl border-2"
+              >
                 <Link href="/admin/players">
                   <Users className="w-6 h-6 mb-2" />
                   <span className="text-sm">Ajouter joueur</span>
                 </Link>
               </Button>
-              <Button asChild variant="outline" className="h-20 flex-col rounded-xl border-2">
+              <Button
+                asChild
+                variant="outline"
+                className="h-20 flex-col rounded-xl border-2"
+              >
                 <Link href="/admin/transactions">
                   <CreditCard className="w-6 h-6 mb-2" />
                   <span className="text-sm">Valider paiements</span>
                 </Link>
               </Button>
-              <Button asChild variant="outline" className="h-20 flex-col rounded-xl border-2">
+              <Button
+                asChild
+                variant="outline"
+                className="h-20 flex-col rounded-xl border-2"
+              >
                 <Link href="/admin/analytics">
                   <BarChart3 className="w-6 h-6 mb-2" />
                   <span className="text-sm">Voir analytics</span>

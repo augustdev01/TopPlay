@@ -1,43 +1,87 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Trophy, Vote, Users, TrendingUp, ArrowRight, Star, Crown, Zap, Target } from 'lucide-react';
-import Link from 'next/link';
-import { mockCompetitions, mockPlayers } from '@/lib/mock-data';
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Trophy,
+  Vote,
+  Users,
+  TrendingUp,
+  ArrowRight,
+  Star,
+  Crown,
+  Zap,
+  Target,
+} from "lucide-react";
+import Link from "next/link";
+import { CompetitionEntity, PlayerEntity } from "@/types/entities/entities";
+// import { mockCompetitions, mockPlayers } from '@/lib/mock-data';
 
 export default function HomePage() {
-  const [competitions, setCompetitions] = useState(mockCompetitions);
-  const [topPlayers, setTopPlayers] = useState<any[]>([]);
+  const [competitions, setCompetitions] = useState<CompetitionEntity[]>([]);
+  const [topPlayers, setTopPlayers] = useState<PlayerEntity[]>([]);
+  const [players, setPlayers] = useState<PlayerEntity[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simuler le chargement et calculer les top players
-    setTimeout(() => {
-      const allPlayers = mockPlayers.map(player => {
-        const competition = mockCompetitions.find(c => c._id === player.competitionId);
-        return {
-          ...player,
-          competitionName: competition?.name,
-          competitionSlug: competition?.slug
-        };
-      });
-      
-      const sortedPlayers = allPlayers
-        .sort((a, b) => b.votesConfirmed - a.votesConfirmed)
-        .slice(0, 6);
-      
-      setTopPlayers(sortedPlayers);
-      setLoading(false);
-    }, 800);
-  }, []);
+    const fetchData = async () => {
+      try {
+        // 1. Récupérer toutes les compétitions
+        const compRes = await fetch("/api/admin/competitions");
+        if (!compRes.ok) throw new Error("Erreur API compétitions");
+        const comps: CompetitionEntity[] = await compRes.json();
+        setCompetitions(comps);
 
-  const activeCompetitions = competitions.filter(c => c.status === 'active');
-  const totalVotes = competitions.reduce((acc, comp) => acc + comp.totalVotes, 0);
-  const totalRevenue = competitions.reduce((acc, comp) => acc + comp.revenue, 0);
+        // 2. Récupérer tous les joueurs (ou les joueurs d'une compétition précise)
+        const playersRes = await fetch("/api/admin/players");
+        if (!playersRes.ok) throw new Error("Erreur API joueurs");
+        const players: PlayerEntity[] = await playersRes.json();
+        setPlayers(players);
+        // 3. Enrichir chaque player avec ses infos de compétition
+        const enrichedPlayers = players.filter((player) => {
+          const comp = comps.find((c) => c._id === player.competitionId);
+          return {
+            ...player,
+            competitionName: comp?.name ?? "Inconnue",
+            competitionSlug: comp?.slug ?? "",
+            competitionStatus: comp?.status ?? "draft",
+            revenue: player.votesConfirmed * (comp?.votePrice ?? 0),
+          };
+        });
+
+        // 4. Trier et prendre les 6 meilleurs
+        const sortedPlayers = enrichedPlayers
+          .sort((a, b) => b.votesConfirmed - a.votesConfirmed)
+          .slice(0, 6);
+
+        setTopPlayers(sortedPlayers);
+      } catch (error) {
+        console.error("Erreur fetch dashboard:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+  const activeCompetitions = competitions.filter((c) => c.status === "active");
+  const totalVotes = competitions.reduce(
+    (acc, comp) => acc + comp.totalVotes,
+    0
+  );
+  const totalRevenue = competitions.reduce(
+    (acc, comp) => acc + comp.revenue,
+    0
+  );
 
   return (
     <div className="bg-gradient-to-br from-indigo-50 via-white to-blue-50">
@@ -50,14 +94,15 @@ export default function HomePage() {
             transition={{ duration: 0.6 }}
           >
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-gray-900 mb-6">
-              Votez pour vos 
+              Votez pour vos
               <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                {" "}champions
+                {" "}
+                champions
               </span>
             </h1>
             <p className="text-lg md:text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
-              Soutenez vos athlètes préférés avec des votes payants. 
-              Chaque vote compte pour identifier les meilleurs talents du Sénégal.
+              Soutenez vos athlètes préférés avec des votes payants. Chaque vote
+              compte pour identifier les meilleurs talents du Sénégal.
             </p>
           </motion.div>
 
@@ -67,14 +112,23 @@ export default function HomePage() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="flex flex-col sm:flex-row gap-4 justify-center mb-16"
           >
-            <Button asChild size="lg" className="bg-indigo-600 hover:bg-indigo-700 text-lg px-8 py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all">
+            <Button
+              asChild
+              size="lg"
+              className="bg-indigo-600 hover:bg-indigo-700 text-lg px-8 py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all"
+            >
               <Link href="/competitions">
                 <Vote className="w-5 h-5 mr-2" />
                 Commencer à voter
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Link>
             </Button>
-            <Button asChild variant="outline" size="lg" className="text-lg px-8 py-4 rounded-2xl border-2 hover:bg-gray-50">
+            <Button
+              asChild
+              variant="outline"
+              size="lg"
+              className="text-lg px-8 py-4 rounded-2xl border-2 hover:bg-gray-50"
+            >
               <Link href="/classements">
                 <Trophy className="w-5 h-5 mr-2" />
                 Voir les classements
@@ -90,22 +144,36 @@ export default function HomePage() {
             className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto mb-16"
           >
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 md:p-6 text-center shadow-lg border border-white/20">
-              <div className="text-2xl md:text-3xl font-bold text-indigo-600 mb-1">{totalVotes.toLocaleString()}</div>
-              <div className="text-xs md:text-sm text-gray-600 font-medium">Votes confirmés</div>
+              <div className="text-2xl md:text-3xl font-bold text-indigo-600 mb-1">
+                {totalVotes.toLocaleString()}
+              </div>
+              <div className="text-xs md:text-sm text-gray-600 font-medium">
+                Votes confirmés
+              </div>
             </div>
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 md:p-6 text-center shadow-lg border border-white/20">
-              <div className="text-2xl md:text-3xl font-bold text-emerald-600 mb-1">{mockPlayers.length}</div>
-              <div className="text-xs md:text-sm text-gray-600 font-medium">Joueurs actifs</div>
+              <div className="text-2xl md:text-3xl font-bold text-emerald-600 mb-1">
+                {players.length}
+              </div>
+              <div className="text-xs md:text-sm text-gray-600 font-medium">
+                Joueurs actifs
+              </div>
             </div>
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 md:p-6 text-center shadow-lg border border-white/20">
-              <div className="text-2xl md:text-3xl font-bold text-purple-600 mb-1">{activeCompetitions.length}</div>
-              <div className="text-xs md:text-sm text-gray-600 font-medium">Compétitions</div>
+              <div className="text-2xl md:text-3xl font-bold text-purple-600 mb-1">
+                {activeCompetitions.length}
+              </div>
+              <div className="text-xs md:text-sm text-gray-600 font-medium">
+                Compétitions
+              </div>
             </div>
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 md:p-6 text-center shadow-lg border border-white/20">
               <div className="text-2xl md:text-3xl font-bold text-orange-600 mb-1">
                 {(totalRevenue / 1000000).toFixed(1)}M
               </div>
-              <div className="text-xs md:text-sm text-gray-600 font-medium">FCFA collectés</div>
+              <div className="text-xs md:text-sm text-gray-600 font-medium">
+                FCFA collectés
+              </div>
             </div>
           </motion.div>
         </div>
@@ -123,14 +191,15 @@ export default function HomePage() {
             Compétitions en cours
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Votez dès maintenant pour vos joueurs favoris dans ces compétitions actives
+            Votez dès maintenant pour vos joueurs favoris dans ces compétitions
+            actives
           </p>
         </motion.div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
           {activeCompetitions.map((competition, index) => (
             <motion.div
-              key={competition._id}
+              key={index}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.7 + index * 0.1 }}
@@ -148,13 +217,13 @@ export default function HomePage() {
                       </div>
                     </div>
                   </div>
-                  
+
                   <CardTitle className="text-xl">{competition.name}</CardTitle>
                   <CardDescription className="text-sm">
                     {competition.description}
                   </CardDescription>
                 </CardHeader>
-                
+
                 <CardContent className="space-y-4">
                   {/* Stats */}
                   <div className="grid grid-cols-2 gap-4">
@@ -165,7 +234,7 @@ export default function HomePage() {
                       </div>
                       <div className="text-xs text-gray-600">Joueurs</div>
                     </div>
-                    
+
                     <div className="bg-emerald-50 rounded-lg p-3 text-center">
                       <Vote className="w-5 h-5 text-emerald-600 mx-auto mb-1" />
                       <div className="text-lg font-bold text-emerald-600">
@@ -177,8 +246,8 @@ export default function HomePage() {
 
                   {/* Actions */}
                   <div className="flex space-x-2 pt-2">
-                    <Button 
-                      asChild 
+                    <Button
+                      asChild
                       className="flex-1 bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-lg hover:shadow-xl"
                     >
                       <Link href={`/competitions/${competition.slug}/vote`}>
@@ -186,12 +255,14 @@ export default function HomePage() {
                         Voter maintenant
                       </Link>
                     </Button>
-                    <Button 
-                      asChild 
-                      variant="outline" 
+                    <Button
+                      asChild
+                      variant="outline"
                       className="flex-1 rounded-xl border-2"
                     >
-                      <Link href={`/competitions/${competition.slug}/classement`}>
+                      <Link
+                        href={`/competitions/${competition.slug}/classement`}
+                      >
                         <Trophy className="w-4 h-4 mr-2" />
                         Classement
                       </Link>
@@ -243,7 +314,7 @@ export default function HomePage() {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {topPlayers.slice(0, 6).map((player, index) => (
             <motion.div
-              key={player._id}
+              key={index}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.9 + index * 0.1 }}
@@ -252,16 +323,25 @@ export default function HomePage() {
                 <CardContent className="p-6">
                   <div className="flex items-center space-x-4">
                     {/* Rank */}
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold ${
-                      index === 0 ? 'bg-gradient-to-br from-yellow-400 to-yellow-600 text-white' :
-                      index === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-500 text-white' :
-                      index === 2 ? 'bg-gradient-to-br from-amber-400 to-amber-600 text-white' :
-                      'bg-gradient-to-br from-indigo-100 to-purple-100 text-indigo-700'
-                    }`}>
+                    <div
+                      className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold ${
+                        index === 0
+                          ? "bg-gradient-to-br from-yellow-400 to-yellow-600 text-white"
+                          : index === 1
+                          ? "bg-gradient-to-br from-gray-300 to-gray-500 text-white"
+                          : index === 2
+                          ? "bg-gradient-to-br from-amber-400 to-amber-600 text-white"
+                          : "bg-gradient-to-br from-indigo-100 to-purple-100 text-indigo-700"
+                      }`}
+                    >
                       {index < 3 ? (
-                        index === 0 ? <Crown className="w-6 h-6" /> :
-                        index === 1 ? <Star className="w-5 h-5" /> :
-                        <Trophy className="w-5 h-5" />
+                        index === 0 ? (
+                          <Crown className="w-6 h-6" />
+                        ) : index === 1 ? (
+                          <Star className="w-5 h-5" />
+                        ) : (
+                          <Trophy className="w-5 h-5" />
+                        )
                       ) : (
                         index + 1
                       )}
@@ -305,7 +385,9 @@ export default function HomePage() {
                       size="sm"
                       className="bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-lg hover:shadow-xl"
                     >
-                      <Link href={`/competitions/${player.competitionSlug}/vote`}>
+                      <Link
+                        href={`/competitions/${player.competitionSlug}/vote`}
+                      >
                         <Vote className="w-4 h-4 mr-1" />
                         Voter
                       </Link>
@@ -323,7 +405,12 @@ export default function HomePage() {
           transition={{ delay: 1.5 }}
           className="text-center mt-8"
         >
-          <Button asChild variant="outline" size="lg" className="rounded-2xl border-2">
+          <Button
+            asChild
+            variant="outline"
+            size="lg"
+            className="rounded-2xl border-2"
+          >
             <Link href="/classements">
               Voir tous les classements
               <ArrowRight className="w-5 h-5 ml-2" />
@@ -366,8 +453,12 @@ export default function HomePage() {
               </CardHeader>
               <CardContent>
                 <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-6">
-                  <span className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">200 FCFA</span>
-                  <p className="text-sm text-gray-600 mt-2 font-medium">par vote</p>
+                  <span className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                    200 FCFA
+                  </span>
+                  <p className="text-sm text-gray-600 mt-2 font-medium">
+                    par vote
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -390,8 +481,12 @@ export default function HomePage() {
               </CardHeader>
               <CardContent>
                 <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-6">
-                  <span className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">Live</span>
-                  <p className="text-sm text-gray-600 mt-2 font-medium">Mise à jour automatique</p>
+                  <span className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+                    Live
+                  </span>
+                  <p className="text-sm text-gray-600 mt-2 font-medium">
+                    Mise à jour automatique
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -414,8 +509,12 @@ export default function HomePage() {
               </CardHeader>
               <CardContent>
                 <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6">
-                  <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">∞</span>
-                  <p className="text-sm text-gray-600 mt-2 font-medium">Aucune limite</p>
+                  <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                    ∞
+                  </span>
+                  <p className="text-sm text-gray-600 mt-2 font-medium">
+                    Aucune limite
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -435,19 +534,27 @@ export default function HomePage() {
             Prêt à soutenir vos champions ?
           </h2>
           <p className="text-lg md:text-xl text-indigo-100 mb-8 max-w-2xl mx-auto">
-            Rejoignez des milliers de fans qui soutiennent déjà leurs joueurs favoris
+            Rejoignez des milliers de fans qui soutiennent déjà leurs joueurs
+            favoris
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild size="lg" className="bg-white text-indigo-600 hover:bg-gray-50 text-lg px-8 py-4 rounded-2xl shadow-lg hover:shadow-xl">
+            <Button
+              asChild
+              size="lg"
+              className="bg-white text-indigo-600 hover:bg-gray-50 text-lg px-8 py-4 rounded-2xl shadow-lg hover:shadow-xl"
+            >
               <Link href="/competitions">
                 <Vote className="w-5 h-5 mr-2" />
                 Commencer à voter
               </Link>
             </Button>
-            <Button asChild variant="outline" size="lg" className="text-lg px-8 py-4 rounded-2xl border-2 border-white/30 text-white hover:bg-white/10">
-              <Link href="/help">
-                Comment ça marche ?
-              </Link>
+            <Button
+              asChild
+              variant="outline"
+              size="lg"
+              className="text-lg px-8 py-4 rounded-2xl border-2 border-white/30 text-white hover:bg-white/10"
+            >
+              <Link href="/help">Comment ça marche ?</Link>
             </Button>
           </div>
         </motion.div>

@@ -1,33 +1,44 @@
-import { NextResponse } from 'next/server';
-import { mockCompetitions, mockPlayers } from '@/lib/mock-data';
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/db";
+import { mapPlayer } from "@/lib/mappers/mappers";
 
 export async function GET(
   request: Request,
   { params }: { params: { slug: string } }
 ) {
   try {
-    // Simuler un délai de réseau
-    await new Promise(resolve => setTimeout(resolve, 400));
+    const { slug } = params;
 
-    const competition = mockCompetitions.find(c => c.slug === params.slug);
+    // Récupérer la compétition
+    const competition = await prisma.competition.findUnique({
+      where: { slug },
+      select: { id: true, votePrice: true },
+    });
+
     if (!competition) {
       return NextResponse.json(
-        { error: 'Compétition non trouvée' },
+        { error: "Compétition non trouvée" },
         { status: 404 }
       );
     }
 
-    const players = mockPlayers
-      .filter(p => p.competitionId === competition._id)
-      .sort((a, b) => b.votesConfirmed - a.votesConfirmed);
+    // Récupérer les joueurs de cette compétition
+    const players = await prisma.player.findMany({
+      where: { competitionId: competition.id },
+      include: {
+        competition: {
+          select: { name: true, slug: true, status: true, votePrice: true },
+        },
+      },
+      orderBy: { votesConfirmed: "desc" },
+    });
 
-    return NextResponse.json(players);
-    
+    // Mapper les données pour ajouter revenue, competitionName, etc.
+    const enrichedPlayers = players.map((p) => mapPlayer(p));
+
+    return NextResponse.json(enrichedPlayers);
   } catch (error) {
-    console.error('Erreur récupération joueurs:', error);
-    return NextResponse.json(
-      { error: 'Erreur serveur' },
-      { status: 500 }
-    );
+    console.error("Erreur récupération joueurs:", error);
+    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
   }
 }

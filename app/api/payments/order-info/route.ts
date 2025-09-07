@@ -1,7 +1,6 @@
-import { NextResponse } from 'next/server';
-import dbConnect from '@/lib/mongodb';
-import { Order } from '@/lib/models/Order';
-import { verifySecureState } from '@/lib/wave/payment';
+import { NextResponse } from "next/server";
+import { verifySecureState } from "@/lib/wave/payment";
+import { prisma } from "@/lib/db";
 
 export async function POST(request: Request) {
   try {
@@ -9,7 +8,7 @@ export async function POST(request: Request) {
 
     if (!orderId || !state) {
       return NextResponse.json(
-        { error: 'Paramètres manquants' },
+        { error: "Paramètres manquants" },
         { status: 400 }
       );
     }
@@ -17,44 +16,46 @@ export async function POST(request: Request) {
     // Vérifier le state sécurisé
     if (!verifySecureState(state, orderId)) {
       return NextResponse.json(
-        { error: 'State invalide ou expiré' },
+        { error: "State invalide ou expiré" },
         { status: 400 }
       );
     }
 
-    await dbConnect();
-
-    // Récupérer les informations de la commande
-    const order = await Order.findById(orderId)
-      .populate('playerId', 'firstName lastName')
-      .populate('competitionId', 'name slug');
+    // Récupérer la commande avec player et competition
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        player: {
+          select: { firstName: true, lastName: true },
+        },
+        competition: {
+          select: { name: true, slug: true },
+        },
+      },
+    });
 
     if (!order) {
       return NextResponse.json(
-        { error: 'Commande non trouvée' },
+        { error: "Commande non trouvée" },
         { status: 404 }
       );
     }
 
     return NextResponse.json({
-      orderId: order._id,
+      orderId: order.id,
       player: {
-        firstName: order.playerId.firstName,
-        lastName: order.playerId.lastName
+        firstName: order.player.firstName,
+        lastName: order.player.lastName,
       },
       competition: {
-        name: order.competitionId.name,
-        slug: order.competitionId.slug
+        name: order.competition.name,
+        slug: order.competition.slug,
       },
       amount: order.amount,
-      status: order.status
+      status: order.status,
     });
-
   } catch (error) {
-    console.error('Erreur récupération order info:', error);
-    return NextResponse.json(
-      { error: 'Erreur serveur' },
-      { status: 500 }
-    );
+    console.error("Erreur récupération order info:", error);
+    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
   }
 }

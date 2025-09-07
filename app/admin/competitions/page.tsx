@@ -1,65 +1,84 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { 
-  Trophy, 
-  Plus, 
-  Search, 
-  Edit, 
-  Trash2, 
-  Users, 
+import { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import {
+  Trophy,
+  Plus,
+  Search,
+  Edit,
+  Trash2,
+  Users,
   Vote,
   Calendar,
   DollarSign,
-  Eye
-} from 'lucide-react';
-import { motion } from 'framer-motion';
-import Link from 'next/link';
-import { mockCompetitions } from '@/lib/mock-data';
+  Eye,
+} from "lucide-react";
+import { motion } from "framer-motion";
+import Link from "next/link";
+import { mockCompetitions } from "@/lib/mock-data";
+import { CompetitionEntity } from "@/types/entities/entities";
 
 export default function AdminCompetitionsPage() {
-  const [competitions, setCompetitions] = useState(mockCompetitions);
+  const [competitions, setCompetitions] = useState<CompetitionEntity[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    setTimeout(() => setLoading(false), 800);
+    const fetchCompetitions = async () => {
+      try {
+        const res = await fetch("/api/admin/competitions");
+        if (!res.ok) throw new Error("Erreur récupération compétitions");
+        const data = await res.json();
+        setCompetitions(data);
+      } catch (error) {
+        console.error("Erreur API:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCompetitions();
   }, []);
 
   const getStatusConfig = (status: string) => {
     switch (status) {
-      case 'active':
-        return { label: 'Active', color: 'bg-green-500 text-white' };
-      case 'ended':
-        return { label: 'Terminée', color: 'bg-gray-500 text-white' };
-      case 'draft':
-        return { label: 'Brouillon', color: 'bg-orange-500 text-white' };
+      case "active":
+        return { label: "Active", color: "bg-green-500 text-white" };
+      case "ended":
+        return { label: "Terminée", color: "bg-gray-500 text-white" };
+      case "draft":
+        return { label: "Brouillon", color: "bg-orange-500 text-white" };
       default:
-        return { label: 'Inconnu', color: 'bg-gray-500 text-white' };
+        return { label: "Inconnu", color: "bg-gray-500 text-white" };
     }
   };
 
-  const filteredCompetitions = competitions.filter(comp =>
-    comp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    comp.slug.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredCompetitions = competitions.filter(
+    (comp: CompetitionEntity) =>
+      comp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      comp.slug.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleDelete = (competitionId: string) => {
-    if (confirm('Êtes-vous sûr de vouloir supprimer cette compétition ?')) {
-      setCompetitions(prev => prev.filter(c => c._id !== competitionId));
+    if (confirm("Êtes-vous sûr de vouloir supprimer cette compétition ?")) {
+      setCompetitions((prev) => prev.filter((c) => c._id !== competitionId));
     }
   };
 
   const handleStatusChange = (competitionId: string, newStatus: string) => {
-    setCompetitions(prev => 
-      prev.map(c => 
-        c._id === competitionId 
-          ? { ...c, status: newStatus as any }
-          : c
+    setCompetitions((prev) =>
+      prev.map((c) =>
+        c._id === competitionId ? { ...c, status: newStatus as any } : c
       )
     );
   };
@@ -91,9 +110,14 @@ export default function AdminCompetitionsPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Compétitions</h1>
-            <p className="text-gray-600 mt-1">Gérez toutes les compétitions de la plateforme</p>
+            <p className="text-gray-600 mt-1">
+              Gérez toutes les compétitions de la plateforme
+            </p>
           </div>
-          <Button asChild className="bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-lg">
+          <Button
+            asChild
+            className="bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-lg"
+          >
             <Link href="/admin/competitions/create">
               <Plus className="w-4 h-4 mr-2" />
               Nouvelle compétition
@@ -132,10 +156,10 @@ export default function AdminCompetitionsPage() {
       >
         {filteredCompetitions.map((competition, index) => {
           const statusConfig = getStatusConfig(competition.status);
-          
+
           return (
             <motion.div
-              key={competition._id}
+              key={index}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3 + index * 0.1 }}
@@ -146,14 +170,20 @@ export default function AdminCompetitionsPage() {
                     <div className="flex-1">
                       <div className="flex items-center space-x-3 mb-3">
                         <Trophy className="w-6 h-6 text-indigo-600" />
-                        <h3 className="text-xl font-bold text-gray-900">{competition.name}</h3>
-                        <Badge className={`${statusConfig.color} rounded-full px-3 py-1`}>
+                        <h3 className="text-xl font-bold text-gray-900">
+                          {competition.name}
+                        </h3>
+                        <Badge
+                          className={`${statusConfig.color} rounded-full px-3 py-1`}
+                        >
                           {statusConfig.label}
                         </Badge>
                       </div>
-                      
-                      <p className="text-gray-600 mb-4">{competition.description}</p>
-                      
+
+                      <p className="text-gray-600 mb-4">
+                        {competition.description}
+                      </p>
+
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div className="flex items-center space-x-2">
                           <Users className="w-4 h-4 text-gray-500" />
@@ -176,48 +206,65 @@ export default function AdminCompetitionsPage() {
                         <div className="flex items-center space-x-2">
                           <Calendar className="w-4 h-4 text-gray-500" />
                           <span className="text-sm text-gray-600">
-                            {competition.startDate ? new Date(competition.startDate).toLocaleDateString('fr-FR') : 'Non définie'}
+                            {competition.startDate
+                              ? new Date(
+                                  competition.startDate
+                                ).toLocaleDateString("fr-FR")
+                              : "Non définie"}
                           </span>
                         </div>
                       </div>
                     </div>
 
                     <div className="flex flex-col space-y-2 ml-6">
-                      <Button asChild size="sm" variant="outline" className="rounded-xl">
+                      <Button
+                        asChild
+                        size="sm"
+                        variant="outline"
+                        className="rounded-xl"
+                      >
                         <Link href={`/competitions/${competition.slug}/vote`}>
                           <Eye className="w-4 h-4 mr-2" />
                           Voir
                         </Link>
                       </Button>
-                      <Button size="sm" variant="outline" className="rounded-xl">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="rounded-xl"
+                      >
                         <Edit className="w-4 h-4 mr-2" />
                         Modifier
                       </Button>
-                      
+
                       {/* Quick status change */}
-                      {competition.status === 'draft' && (
-                        <Button 
-                          size="sm" 
-                          onClick={() => handleStatusChange(competition._id, 'active')}
+                      {competition.status === "draft" && (
+                        <Button
+                          size="sm"
+                          onClick={() =>
+                            handleStatusChange(competition._id, "active")
+                          }
                           className="bg-green-600 hover:bg-green-700 rounded-xl text-white"
                         >
                           Activer
                         </Button>
                       )}
-                      
-                      {competition.status === 'active' && (
-                        <Button 
-                          size="sm" 
-                          onClick={() => handleStatusChange(competition._id, 'ended')}
+
+                      {competition.status === "active" && (
+                        <Button
+                          size="sm"
+                          onClick={() =>
+                            handleStatusChange(competition._id, "ended")
+                          }
                           className="bg-gray-600 hover:bg-gray-700 rounded-xl text-white"
                         >
                           Terminer
                         </Button>
                       )}
-                      
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
+
+                      <Button
+                        size="sm"
+                        variant="outline"
                         onClick={() => handleDelete(competition._id)}
                         className="rounded-xl text-red-600 hover:text-red-700 border-red-200 hover:border-red-300"
                       >
@@ -244,9 +291,14 @@ export default function AdminCompetitionsPage() {
             Aucune compétition trouvée
           </h3>
           <p className="text-gray-500 mb-6">
-            {searchTerm ? 'Aucun résultat pour votre recherche' : 'Créez votre première compétition'}
+            {searchTerm
+              ? "Aucun résultat pour votre recherche"
+              : "Créez votre première compétition"}
           </p>
-          <Button asChild className="bg-indigo-600 hover:bg-indigo-700 rounded-xl">
+          <Button
+            asChild
+            className="bg-indigo-600 hover:bg-indigo-700 rounded-xl"
+          >
             <Link href="/admin/competitions/create">
               <Plus className="w-4 h-4 mr-2" />
               Créer une compétition

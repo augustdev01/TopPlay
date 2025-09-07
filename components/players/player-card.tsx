@@ -1,13 +1,20 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Vote, Eye, Trophy, Users } from 'lucide-react';
-import Link from 'next/link';
-import { VoteModal } from './vote-modal';
-import { motion } from 'framer-motion';
+import { useEffect, useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Vote, Eye, Trophy, Users } from "lucide-react";
+import Link from "next/link";
+import { VoteModal } from "./vote-modal";
+import { motion } from "framer-motion";
+import { ConfirmPaymentModal } from "./confirmPayment-modal";
 
 interface Player {
   _id: string;
@@ -36,15 +43,31 @@ interface PlayerCardProps {
   onVoteSuccess?: () => void;
 }
 
-export function PlayerCard({ player, competition, onVoteSuccess }: PlayerCardProps) {
+export function PlayerCard({
+  player,
+  competition,
+  onVoteSuccess,
+}: PlayerCardProps) {
   const [voteModalOpen, setVoteModalOpen] = useState(false);
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [orderData, setOrderData] = useState<{
+    orderId: string;
+    state: string;
+    customerPhone: string;
+  } | null>(null);
+
+  // Lors de l'ouverture du modal de confirmation
+  useEffect(() => {
+    const savedOrder = localStorage.getItem("currentOrder");
+    if (savedOrder) {
+      setOrderData(JSON.parse(savedOrder));
+      setConfirmModalOpen(true);
+    }
+  }, []);
 
   return (
     <>
-      <motion.div
-        whileHover={{ scale: 1.02 }}
-        transition={{ duration: 0.2 }}
-      >
+      <motion.div whileHover={{ scale: 1.02 }} transition={{ duration: 0.2 }}>
         <Card className="rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border-0 overflow-hidden bg-white">
           {/* Photo */}
           <div className="relative h-48 bg-gradient-to-br from-indigo-100 to-purple-100">
@@ -59,12 +82,12 @@ export function PlayerCard({ player, competition, onVoteSuccess }: PlayerCardPro
                 <Users className="w-16 h-16 text-indigo-300" />
               </div>
             )}
-            
+
             {/* Badge pourcentage */}
             <div className="absolute top-4 right-4">
               <Badge className="bg-white/90 text-gray-900 hover:bg-white rounded-full px-3 py-1">
                 <Trophy className="w-3 h-3 mr-1" />
-                {player.percentage ? `${player.percentage}%` : 'N/A'}
+                {player.percentage ? `${player.percentage}%` : "N/A"}
               </Badge>
             </div>
           </div>
@@ -95,14 +118,16 @@ export function PlayerCard({ player, competition, onVoteSuccess }: PlayerCardPro
                 <Vote className="w-4 h-4 mr-2" />
                 Voter ({competition.votePrice} FCFA)
               </Button>
-              
-              <Button 
+
+              <Button
                 asChild
-                variant="outline" 
+                variant="outline"
                 size="icon"
                 className="rounded-xl border-2 hover:bg-gray-50 hover:text-gray-900"
               >
-                <Link href={`/competitions/${competition.slug}/players/${player.slug}`}>
+                <Link
+                  href={`/competitions/${competition.slug}/players/${player.slug}`}
+                >
                   <Eye className="w-4 h-4" />
                 </Link>
               </Button>
@@ -116,11 +141,25 @@ export function PlayerCard({ player, competition, onVoteSuccess }: PlayerCardPro
         onOpenChange={setVoteModalOpen}
         player={player}
         competition={competition}
-        onSuccess={() => {
-          setVoteModalOpen(false);
-          onVoteSuccess?.();
+        onSuccess={(data) => {
+          setOrderData(data); // stocke orderId + state + customerPhone
+          setVoteModalOpen(false); // ferme modal paiement
+          setConfirmModalOpen(true); // ouvre modal confirmation
         }}
       />
+
+      {orderData && (
+        <ConfirmPaymentModal
+          open={confirmModalOpen}
+          onOpenChange={setConfirmModalOpen}
+          orderData={orderData}
+          onSuccess={() => {
+            setOrderData(null);
+            localStorage.removeItem("currentOrder");
+            onVoteSuccess?.();
+          }}
+        />
+      )}
     </>
   );
 }

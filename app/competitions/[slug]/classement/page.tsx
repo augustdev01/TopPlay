@@ -1,14 +1,20 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
-import useSWR from 'swr';
-import { LeaderboardTable } from '@/components/leaderboard/leaderboard-table';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Trophy, ArrowLeft, RefreshCw } from 'lucide-react';
-import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
+import useSWR from "swr";
+import { LeaderboardTable } from "@/components/leaderboard/leaderboard-table";
+/* import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"; */
+import { Button } from "@/components/ui/button";
+import { Trophy, ArrowLeft, RefreshCw } from "lucide-react";
+import Link from "next/link";
+import { motion } from "framer-motion";
 
 interface Competition {
   _id: string;
@@ -27,25 +33,31 @@ interface LeaderboardEntry {
   position?: string;
   photoUrl?: string;
   votesConfirmed: number;
+  percentage: number;
 }
 
-const fetcher = (url: string) => fetch(url).then(res => res.json());
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function LeaderboardPage() {
   const params = useParams();
   const competitionSlug = params.slug as string;
-  
+
   const [competition, setCompetition] = useState<Competition | null>(null);
-  
+
   // Polling du classement toutes les 3 secondes
-  const { data: leaderboard, error, mutate, isLoading } = useSWR<LeaderboardEntry[]>(
+  const {
+    data: leaderboard,
+    error,
+    mutate,
+    isLoading,
+  } = useSWR<LeaderboardEntry[]>(
     `/api/competitions/${competitionSlug}/leaderboard`,
     fetcher,
     {
-      refreshInterval: 3000, // 3 secondes
-      dedupingInterval: 2000,
+      refreshInterval: 30000, // 3 secondes
+      dedupingInterval: 20000,
       revalidateOnFocus: true,
-      revalidateOnReconnect: true
+      revalidateOnReconnect: true,
     }
   );
 
@@ -61,7 +73,7 @@ export default function LeaderboardPage() {
         setCompetition(data);
       }
     } catch (error) {
-      console.error('Erreur chargement compétition:', error);
+      console.error("Erreur chargement compétition:", error);
     }
   };
 
@@ -97,21 +109,25 @@ export default function LeaderboardPage() {
                 </h1>
                 <p className="text-lg text-gray-600">{competition.name}</p>
                 {competition.description && (
-                  <p className="text-sm text-gray-500 mt-1">{competition.description}</p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    {competition.description}
+                  </p>
                 )}
               </div>
-              
+
               <div className="flex space-x-3">
-                <Button 
+                <Button
                   onClick={handleRefresh}
-                  variant="outline" 
+                  variant="outline"
                   size="icon"
                   className="rounded-xl"
                   disabled={isLoading}
                 >
-                  <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+                  <RefreshCw
+                    className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`}
+                  />
                 </Button>
-                
+
                 <Button asChild variant="outline" className="rounded-xl">
                   <Link href={`/competitions/${competitionSlug}/vote`}>
                     <ArrowLeft className="w-4 h-4 mr-2" />
@@ -130,7 +146,7 @@ export default function LeaderboardPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <LeaderboardTable 
+          <LeaderboardTable
             leaderboard={leaderboard || []}
             loading={isLoading}
             error={error}
