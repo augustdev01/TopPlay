@@ -46,16 +46,16 @@ export default function LeaderboardPage() {
 
   // Polling du classement toutes les 3 secondes
   const {
-    data: leaderboard,
+    data: data,
     error,
     mutate,
     isLoading,
-  } = useSWR<LeaderboardEntry[]>(
+  } = useSWR<{ competition: Competition; leaderboard: LeaderboardEntry[] }>(
     `/api/competitions/${competitionSlug}/leaderboard`,
     fetcher,
     {
-      refreshInterval: 30000, // 3 secondes
-      dedupingInterval: 20000,
+      refreshInterval: 300000, // 3 secondes
+      dedupingInterval: 200000,
       revalidateOnFocus: true,
       revalidateOnReconnect: true,
     }
@@ -147,7 +147,7 @@ export default function LeaderboardPage() {
           transition={{ delay: 0.2 }}
         >
           <LeaderboardTable
-            leaderboard={leaderboard || []}
+            leaderboard={data?.leaderboard || []}
             loading={isLoading}
             error={error}
             competitionSlug={competitionSlug}

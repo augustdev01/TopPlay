@@ -86,7 +86,7 @@ export default function HomePage() {
   return (
     <div className="bg-gradient-to-br from-indigo-50 via-white to-blue-50">
       {/* Hero Section */}
-      <section className="container mx-auto px-4 py-16 lg:py-24">
+      <section className="container mx-auto lg:py-24">
         <div className="text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -127,7 +127,7 @@ export default function HomePage() {
               asChild
               variant="outline"
               size="lg"
-              className="text-lg px-8 py-4 rounded-2xl border-2 hover:bg-gray-50"
+              className="text-lg px-8 py-4 rounded-2xl border-2 hover:border-indigo-600/10 hover:text-indigo-600 hover:bg-indigo-600/10 transition-all duration-200"
             >
               <Link href="/classements">
                 <Trophy className="w-5 h-5 mr-2" />
@@ -311,7 +311,7 @@ export default function HomePage() {
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {topPlayers.slice(0, 6).map((player, index) => (
             <motion.div
               key={index}
@@ -321,7 +321,7 @@ export default function HomePage() {
             >
               <Card className="rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] border-0 bg-white/90 backdrop-blur-sm">
                 <CardContent className="p-6">
-                  <div className="flex items-center space-x-4">
+                  <div className="flex xl:flex-row flex-col xl:items-center xl:space-x-4">
                     {/* Rank */}
                     <div
                       className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold ${
@@ -348,7 +348,7 @@ export default function HomePage() {
                     </div>
 
                     {/* Player Photo */}
-                    <div className="w-16 h-16 bg-indigo-100 rounded-full overflow-hidden flex-shrink-0">
+                    <div className=" w-24 h-24 xl:w-16 xl:h-16 bg-indigo-100 rounded-full overflow-hidden flex-shrink-0 m-[0_auto]">
                       {player.photoUrl ? (
                         <img
                           src={player.photoUrl}
@@ -383,7 +383,7 @@ export default function HomePage() {
                     <Button
                       asChild
                       size="sm"
-                      className="bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-lg hover:shadow-xl"
+                      className="bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-lg hover:shadow-xl w-full sm:w-auto"
                     >
                       <Link
                         href={`/competitions/${player.competitionSlug}/vote`}
@@ -409,7 +409,7 @@ export default function HomePage() {
             asChild
             variant="outline"
             size="lg"
-            className="rounded-2xl border-2"
+            className="rounded-2xl border-2 hover:border-indigo-600/10 hover:text-indigo-600 hover:bg-indigo-600/10 transition-all duration-200"
           >
             <Link href="/classements">
               Voir tous les classements
@@ -552,7 +552,7 @@ export default function HomePage() {
               asChild
               variant="outline"
               size="lg"
-              className="text-lg px-8 py-4 rounded-2xl border-2 border-white/30 text-white hover:bg-white/10"
+              className="text-lg px-8 py-4 rounded-2xl border-2 border-white/30 hover:text-gray-600 bg-white/10 text-white transition-all duration-200"
             >
               <Link href="/help">Comment ça marche ?</Link>
             </Button>

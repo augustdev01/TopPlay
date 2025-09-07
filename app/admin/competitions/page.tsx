@@ -69,18 +69,50 @@ export default function AdminCompetitionsPage() {
       comp.slug.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleDelete = (competitionId: string) => {
-    if (confirm("Êtes-vous sûr de vouloir supprimer cette compétition ?")) {
+  const handleDelete = async (competitionId: string) => {
+    if (!confirm("Êtes-vous sûr de vouloir supprimer cette compétition ?"))
+      return;
+
+    try {
+      const res = await fetch(`/api/competitions/${competitionId}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) {
+        throw new Error("Erreur lors de la suppression");
+      }
+
       setCompetitions((prev) => prev.filter((c) => c._id !== competitionId));
+    } catch (error) {
+      console.error(error);
+      alert("La suppression a échoué.");
     }
   };
 
-  const handleStatusChange = (competitionId: string, newStatus: string) => {
-    setCompetitions((prev) =>
-      prev.map((c) =>
-        c._id === competitionId ? { ...c, status: newStatus as any } : c
-      )
-    );
+  const handleStatusChange = async (
+    competitionId: string,
+    newStatus: string
+  ) => {
+    try {
+      const res = await fetch(`/api/competitions/${competitionId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Erreur lors de la mise à jour du statut");
+      }
+
+      const updated = await res.json();
+
+      setCompetitions((prev) =>
+        prev.map((c) => (c._id === competitionId ? updated : c))
+      );
+    } catch (error) {
+      console.error(error);
+      alert("La mise à jour a échoué.");
+    }
   };
 
   if (loading) {
@@ -223,7 +255,7 @@ export default function AdminCompetitionsPage() {
                         variant="outline"
                         className="rounded-xl"
                       >
-                        <Link href={`/competitions/${competition.slug}/vote`}>
+                        <Link href={`competitions/${competition.slug}`}>
                           <Eye className="w-4 h-4 mr-2" />
                           Voir
                         </Link>
@@ -233,8 +265,13 @@ export default function AdminCompetitionsPage() {
                         variant="outline"
                         className="rounded-xl"
                       >
-                        <Edit className="w-4 h-4 mr-2" />
-                        Modifier
+                        <Link
+                          className="flex"
+                          href={`competitions/${competition.slug}/edit`}
+                        >
+                          <Edit className="w-4 h-4 mr-2" />
+                          Modifier
+                        </Link>
                       </Button>
 
                       {/* Quick status change */}

@@ -19,16 +19,35 @@ export async function GET(
     }
 
     // Récupérer les joueurs de cette compétition triés par votes confirmés
-    const leaderboard = await prisma.player.findMany({
+    const players = await prisma.player.findMany({
       where: { competitionId: competition.id },
       orderBy: { votesConfirmed: "desc" },
       take: 100,
       select: {
         id: true,
+        slug: true,
         firstName: true,
         lastName: true,
+        team: true,
+        position: true,
+        photoUrl: true,
         votesConfirmed: true,
       },
+    });
+
+    // Total des votes pour calculer les pourcentages
+    const totalVotes = players.reduce((acc, p) => acc + p.votesConfirmed, 0);
+
+    // Ajouter le pourcentage à chaque joueur
+    const leaderboard = players.map((p, index) => {
+      const percentage =
+        totalVotes > 0 ? (p.votesConfirmed / totalVotes) * 100 : 0;
+
+      return {
+        ...p,
+        rank: index + 1, // classement direct
+        percentage: parseFloat(percentage.toFixed(2)), // 2 décimales
+      };
     });
 
     // Générer ETag basé sur l'état du leaderboard
@@ -42,12 +61,23 @@ export async function GET(
       return new NextResponse(null, { status: 304 });
     }
 
-    return NextResponse.json(leaderboard, {
-      headers: {
-        ETag: etag,
-        "Cache-Control": "public, max-age=1", // cache 1s
+    return NextResponse.json(
+      {
+        competition: {
+          id: competition.id,
+          name: competition.name,
+          slug: competition.slug,
+          totalVotes,
+        },
+        leaderboard,
       },
-    });
+      {
+        headers: {
+          ETag: etag,
+          "Cache-Control": "public, max-age=1", // cache 1s
+        },
+      }
+    );
   } catch (error) {
     console.error("Erreur récupération classement:", error);
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
