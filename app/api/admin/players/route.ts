@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { playerSchema } from "@/lib/validations/schemas";
-
+import { mapPlayer } from "@/lib/mappers/mappers";
+import { Player } from "@prisma/client";
 export async function GET() {
   try {
     const players = await prisma.player.findMany({
@@ -18,13 +19,26 @@ export async function GET() {
       },
     });
 
-    const enrichedPlayers = players.map((player) => ({
+    /*  const enrichedPlayers = players.map((player) => ({
       ...player,
       competitionName: player.competition.name,
       competitionSlug: player.competition.slug,
       competitionStatus: player.competition.status,
       revenue: player.votesConfirmed * player.competition.votePrice,
-    }));
+    })); */
+
+    const enrichedPlayers = players.map(
+      (
+        p: Player & {
+          competition: {
+            name: string;
+            slug: string;
+            status: string;
+            votePrice: number;
+          };
+        }
+      ) => mapPlayer(p)
+    );
 
     return NextResponse.json(enrichedPlayers);
   } catch (error) {
