@@ -125,7 +125,7 @@ export function VoteModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-full max-w-[98vw] rounded-2xl">
+      <DialogContent className="w-full max-w-[98vw] sm:max-w-md rounded-2xl">
         <DialogHeader>
           <DialogTitle className="text-center text-xl">
             Voter pour {player.firstName} {player.lastName}
@@ -158,9 +158,9 @@ export function VoteModal({
           </div>
 
           {/* Payment Info */}
-          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-6 text-center ">
-            <CreditCard className="w-8 h-8 text-indigo-600 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-indigo-600 mb-1">
+          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-2 text-center ">
+            <div className="text-xl font-bold text-indigo-600 mb-1 flex items-center justify-center">
+              <CreditCard className="w-6 h-6 text-indigo-600" />{" "}
               {competition.votePrice} FCFA
             </div>
             <div className="text-sm text-gray-600">
