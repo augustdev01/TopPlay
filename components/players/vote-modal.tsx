@@ -125,7 +125,7 @@ export function VoteModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className=" w-full max-w-[98vw]  sm:max-w-md rounded-2xl">
+      <DialogContent className="w-full max-w-[98vw] rounded-2xl">
         <DialogHeader>
           <DialogTitle className="text-center text-xl">
             Voter pour {player.firstName} {player.lastName}
@@ -135,7 +135,7 @@ export function VoteModal({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6 py-4">
+        <div className="space-y-4 ">
           {/* Player Preview */}
           <div className="flex items-center space-x-4 bg-gray-50 rounded-xl p-4">
             <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center overflow-hidden">
@@ -158,7 +158,7 @@ export function VoteModal({
           </div>
 
           {/* Payment Info */}
-          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-6 text-center">
+          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-6 text-center ">
             <CreditCard className="w-8 h-8 text-indigo-600 mx-auto mb-2" />
             <div className="text-2xl font-bold text-indigo-600 mb-1">
               {competition.votePrice} FCFA
