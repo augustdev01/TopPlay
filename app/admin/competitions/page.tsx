@@ -94,11 +94,14 @@ export default function AdminCompetitionsPage() {
     newStatus: string
   ) => {
     try {
-      const res = await fetch(`/api/competitions/${competitionId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: newStatus }),
-      });
+      const res = await fetch(
+        `/api/admin/competitions/${competitionId}/change-status`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: newStatus }),
+        }
+      );
 
       if (!res.ok) {
         throw new Error("Erreur lors de la mise à jour du statut");

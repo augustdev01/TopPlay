@@ -41,7 +41,7 @@ export function ConfirmPaymentModal({
 
     setLoading(true);
     try {
-      const res = await fetch("/api/payment/confirm-payment", {
+      const res = await fetch("/api/payments/confirm-payment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

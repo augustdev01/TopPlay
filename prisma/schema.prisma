@@ -91,7 +91,6 @@ model Transaction {
   competitionId String
   playerId      String
   playerName    String
-  competition   String
   transactionRef String  @unique
   status        String   @default("submitted") // submitted, confirmed, rejected, auto_confirmed
   amount        Int

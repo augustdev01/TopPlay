@@ -3,13 +3,7 @@ import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
-    const now = new Date();
-    const startOfToday = new Date(now.setHours(0, 0, 0, 0));
-    const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(startOfToday.getDate() - 7);
-
-    // Stats
-    const [activeCompetitions, totalPlayers, pendingTransactions] =
+    const [votesAgg, activeCompetitions, totalPlayers, pendingTransactions] =
       await Promise.all([
         prisma.player.aggregate({
           _sum: { votesConfirmed: true },
@@ -24,22 +18,19 @@ export async function GET() {
     });
 
     const totalRevenue = totalRevenueAgg._sum.amount ?? 0;
-
-    const totalVotesAgg = await prisma.player.aggregate({
-      _sum: { votesConfirmed: true }, // ⚠ amount n’existe pas ici
-    });
+    const totalVotes = votesAgg._sum.votesConfirmed ?? 0;
 
     // Top compétition active
     const topCompetition = await prisma.competition.findFirst({
       where: { status: "active" },
-      // orderBy: { votesConfirmed: "desc" },
+      orderBy: { createdAt: "desc" }, // ou autre critère
     });
 
     // Recent transactions
     const recentTransactions = await prisma.transaction.findMany({
       orderBy: { createdAt: "desc" },
       take: 5,
-      include: { player: true },
+      include: { player: true, competitionRel: true },
     });
 
     // Top players
@@ -51,12 +42,11 @@ export async function GET() {
 
     return NextResponse.json({
       stats: {
-        totalVotes: totalVotesAgg,
-        totalRevenue: totalRevenue,
-        activeCompetitions: activeCompetitions,
-        totalPlayers: totalPlayers,
-        pendingTransactions: pendingTransactions,
-        // weeklyGrowth: weeklyGrowth.toFixed(1),
+        totalVotes,
+        totalRevenue,
+        activeCompetitions,
+        totalPlayers,
+        pendingTransactions,
         topCompetition: topCompetition?.name ?? "N/A",
       },
       recentTransactions: recentTransactions.map((t: any) => ({
@@ -64,7 +54,7 @@ export async function GET() {
         playerName: `${t.player?.firstName ?? "N/A"} ${
           t.player?.lastName ?? ""
         }`,
-        competition: t.competition?.name ?? "N/A",
+        competition: t.competitionRel?.name ?? "N/A",
         amount: t.amount,
         status: t.status,
         time: t.createdAt.toISOString(),

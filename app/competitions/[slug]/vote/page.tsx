@@ -204,13 +204,13 @@ export default function VotePage() {
                 <div className="flex items-center space-x-4 mt-4 justify-center sm:justify-start">
                   <div className="flex items-center space-x-2 bg-indigo-50 rounded-full px-4 py-2">
                     <Vote className="w-5 h-5 text-indigo-600" />
-                    <span className="font-semibold text-indigo-600">
+                    <span className="font-semibold text-indigo-600 text-xs sm:text-sm">
                       {competition.votePrice} FCFA par vote
                     </span>
                   </div>
-                  <div className="flex items-center space-x-2 bg-emerald-50 rounded-full px-4 py-2">
+                  <div className="flex items-center  space-x-2 bg-emerald-50 rounded-full px-4 py-2">
                     <Users className="w-5 h-5 text-emerald-600" />
-                    <span className="font-semibold text-emerald-600">
+                    <span className="font-semibold text-xs text-emerald-600 sm:text-sm">
                       {players.length} joueurs
                     </span>
                   </div>
