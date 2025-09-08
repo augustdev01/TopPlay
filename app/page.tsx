@@ -86,7 +86,7 @@ export default function HomePage() {
   return (
     <div className="bg-gradient-to-br from-indigo-50 via-white to-blue-50">
       {/* Hero Section */}
-      <section className="container mx-auto lg:py-24">
+      <section className="container mx-auto pt-7 lg:py-24">
         <div className="text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -196,7 +196,7 @@ export default function HomePage() {
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
           {activeCompetitions.map((competition, index) => (
             <motion.div
               key={index}
@@ -248,7 +248,7 @@ export default function HomePage() {
                   <div className="flex space-x-2 pt-2">
                     <Button
                       asChild
-                      className="flex-1 bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-lg hover:shadow-xl"
+                      className="flex-1 bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-lg hover:shadow-xl p-2 sm:p-4 transition-all duration-200"
                     >
                       <Link href={`/competitions/${competition.slug}/vote`}>
                         <Vote className="w-4 h-4 mr-2" />
@@ -258,7 +258,7 @@ export default function HomePage() {
                     <Button
                       asChild
                       variant="outline"
-                      className="flex-1 rounded-xl border-2"
+                      className="flex-1 rounded-xl border-2 p-2 sm:p-4 hover:border-indigo-600/10 hover:text-indigo-600 hover:bg-indigo-600/10 transition-all duration-200"
                     >
                       <Link
                         href={`/competitions/${competition.slug}/classement`}

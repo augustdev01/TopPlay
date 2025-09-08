@@ -136,7 +136,7 @@ export function PlayerCard({
         </Card>
       </motion.div>
 
-      <VoteModal
+      {/*   <VoteModal
         open={voteModalOpen}
         onOpenChange={setVoteModalOpen}
         player={player}
@@ -146,20 +146,20 @@ export function PlayerCard({
           setVoteModalOpen(false); // ferme modal paiement
           setConfirmModalOpen(true); // ouvre modal confirmation
         }}
-      />
+      /> */}
 
-      {orderData && (
-        <ConfirmPaymentModal
-          open={confirmModalOpen}
-          onOpenChange={setConfirmModalOpen}
-          orderData={orderData}
-          onSuccess={() => {
-            setOrderData(null);
-            localStorage.removeItem("currentOrder");
-            onVoteSuccess?.();
-          }}
-        />
-      )}
+      {/* {orderData && ( */}
+      <ConfirmPaymentModal
+        open={true}
+        onOpenChange={setConfirmModalOpen}
+        orderData={orderData}
+        onSuccess={() => {
+          setOrderData(null);
+          localStorage.removeItem("currentOrder");
+          onVoteSuccess?.();
+        }}
+      />
+      {/* )} */}
     </>
   );
 }

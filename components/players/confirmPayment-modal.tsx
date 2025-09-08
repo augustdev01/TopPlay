@@ -71,7 +71,8 @@ export function ConfirmPaymentModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md rounded-2xl">
+      <DialogContent className=" w-full max-w-[98vw] sm:max-w-md rounded-2xl">
+        {" "}
         <DialogHeader>
           <DialogTitle className="text-center text-xl">
             Confirmer le paiement
@@ -80,8 +81,7 @@ export function ConfirmPaymentModal({
             Entrez le code Wave reçu après le paiement
           </DialogDescription>
         </DialogHeader>
-
-        <div className="space-y-6 py-4">
+        <div className="space-y-6 py-4 !w-30">
           {/* Info Paiement */}
           <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-6 text-center">
             <CreditCard className="w-8 h-8 text-indigo-600 mx-auto mb-2" />
