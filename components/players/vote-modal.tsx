@@ -125,7 +125,7 @@ export function VoteModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md rounded-2xl">
+      <DialogContent className=" w-full max-w-[98vw]  sm:max-w-md rounded-2xl">
         <DialogHeader>
           <DialogTitle className="text-center text-xl">
             Voter pour {player.firstName} {player.lastName}
