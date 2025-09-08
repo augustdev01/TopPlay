@@ -72,7 +72,7 @@ export async function POST(request: Request) {
           playerId: order.playerId,
           competitionId: order.competitionId,
           playerName: player.firstName + " " + player.lastName,
-          competition: competition.name,
+          // competition: competition.name,
           transactionRef: txCode,
           status: "confirmed",
           amount: order.amount,
