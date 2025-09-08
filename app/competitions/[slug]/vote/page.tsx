@@ -191,17 +191,17 @@ export default function VotePage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <div className="flex items-center justify-between">
+            <div className="flex  flex-col-reverse gap-4 md:flex-row  md:items-center md:justify-between">
               <div>
-                <h1 className="text-4xl font-bold text-gray-900 mb-2">
+                <h1 className=" text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-2 text-center sm:text-left">
                   {competition.name}
                 </h1>
                 {competition.description && (
-                  <p className="text-lg text-gray-600">
+                  <p className="text-lg text-gray-600 text-center sm:text-left">
                     {competition.description}
                   </p>
                 )}
-                <div className="flex items-center space-x-4 mt-4">
+                <div className="flex items-center space-x-4 mt-4 justify-center sm:justify-start">
                   <div className="flex items-center space-x-2 bg-indigo-50 rounded-full px-4 py-2">
                     <Vote className="w-5 h-5 text-indigo-600" />
                     <span className="font-semibold text-indigo-600">
