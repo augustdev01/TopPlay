@@ -75,7 +75,7 @@ export function PlayerCard({
               <img
                 src={player.photoUrl}
                 alt={`${player.firstName} ${player.lastName}`}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover object-top"
               />
             ) : (
               <div className="flex items-center justify-center h-full">
@@ -123,7 +123,7 @@ export function PlayerCard({
                 asChild
                 variant="outline"
                 size="icon"
-                className="rounded-xl border-2 hover:bg-gray-50 hover:text-gray-900"
+                className="rounded-xl border-2 border-indigo-600/10 text-indigo-600 md:hover:border-indigo-600/30 bg-indigo-600/10 md:bg-white transition-all duration-200 md:text-gray-400 md:hover:bg-indigo-600/10 sm:hover:text-indigo-600"
               >
                 <Link
                   href={`/competitions/${competition.slug}/players/${player.slug}`}

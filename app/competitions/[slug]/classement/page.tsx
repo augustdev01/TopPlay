@@ -101,7 +101,7 @@ export default function LeaderboardPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col-reverse gap-4 md:flex-row md:items-center justify-between">
               <div>
                 <h1 className="text-4xl font-bold text-gray-900 mb-2">
                   <Trophy className="w-8 h-8 text-yellow-500 inline mr-3" />

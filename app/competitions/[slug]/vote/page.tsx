@@ -99,12 +99,12 @@ export default function VotePage() {
     }
 
     // Filtre par équipe
-    if (filters.team) {
+    if (filters.team && filters.team !== "all") {
       filtered = filtered.filter((player) => player.team === filters.team);
     }
 
     // Filtre par poste
-    if (filters.position) {
+    if (filters.position && filters.position !== "all") {
       filtered = filtered.filter(
         (player) => player.position === filters.position
       );

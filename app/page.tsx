@@ -46,6 +46,7 @@ export default function HomePage() {
         if (!playersRes.ok) throw new Error("Erreur API joueurs");
         const players: PlayerEntity[] = await playersRes.json();
         setPlayers(players);
+
         // 3. Enrichir chaque player avec ses infos de compétition
         const enrichedPlayers = players.filter((player) => {
           const comp = comps.find((c) => c._id === player.competitionId);
@@ -74,19 +75,24 @@ export default function HomePage() {
     fetchData();
   }, []);
   const activeCompetitions = competitions.filter((c) => c.status === "active");
+
   const totalVotes = competitions.reduce(
     (acc, comp) => acc + comp.totalVotes,
     0
   );
-  const totalRevenue = competitions.reduce(
-    (acc, comp) => acc + comp.revenue,
-    0
-  );
-
+  const totalRevenue = totalVotes * 200;
+  const formatRevenue = (amount: number) => {
+    if (amount >= 1_000_000) {
+      return `${(amount / 1_000_000).toFixed(1)}M`;
+    } else if (amount >= 1_000) {
+      return `${(amount / 1_000).toFixed(0)}K`;
+    }
+    return amount.toString();
+  };
   return (
-    <div className="bg-gradient-to-br from-indigo-50 via-white to-blue-50">
+    <div className="bg-gradient-to-br from-indigo-50 via-white to-blue-50 sm:py-5 lg:py-20">
       {/* Hero Section */}
-      <section className="container mx-auto pt-7 lg:py-24">
+      <section className="container mx-auto pt-7  lg:py-4">
         <div className="text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -127,7 +133,7 @@ export default function HomePage() {
               asChild
               variant="outline"
               size="lg"
-              className="text-lg px-8 py-4 rounded-2xl border-2 hover:border-indigo-600/10 hover:text-indigo-600 hover:bg-indigo-600/10 transition-all duration-200"
+              className="text-lg px-8 py-4 rounded-2xl border-2 border-indigo-600/10 md:border-gray-600/30 text-indigo-600 hover:border-indigo-600/30 bg-indigo-600/10 md:bg-white transition-all duration-200 md:text-black md:hover:bg-indigo-600/10 hover:text-indigo-600"
             >
               <Link href="/classements">
                 <Trophy className="w-5 h-5 mr-2" />
@@ -169,7 +175,7 @@ export default function HomePage() {
             </div>
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 md:p-6 text-center shadow-lg border border-white/20">
               <div className="text-2xl md:text-3xl font-bold text-orange-600 mb-1">
-                {(totalRevenue / 1000000).toFixed(1)}M
+                {formatRevenue(totalRevenue)}
               </div>
               <div className="text-xs md:text-sm text-gray-600 font-medium">
                 FCFA collectés
