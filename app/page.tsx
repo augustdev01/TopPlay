@@ -108,7 +108,7 @@ export default function HomePage() {
             </h1>
             <p className="text-lg md:text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
               Soutenez vos athlètes préférés avec des votes payants. Chaque vote
-              compte pour identifier les meilleurs talents du Sénégal.
+              compte pour identifier les meilleurs talents de Bondoukou.
             </p>
           </motion.div>
 

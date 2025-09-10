@@ -165,7 +165,7 @@ export function LeaderboardTable({
                   }`}
                 >
                   {/* Badge de rang en haut à droite pour mobile */}
-                  <div className="absolute top-3 right-3 z-10  flex-col-reverse items-end justify-end sm:flex-row sm:items-center">
+                  <div className="absolute top-3 right-3 z-10 flex  flex-col-reverse items-end justify-end sm:flex-row sm:items-center">
                     {/* Bouton d'action */}
                     <Button
                       asChild

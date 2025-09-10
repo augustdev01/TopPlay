@@ -1,47 +1,80 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { VoteModal } from '@/components/players/vote-modal';
-import { 
-  ArrowLeft, 
-  Vote, 
-  Trophy, 
-  Users, 
+import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { VoteModal } from "@/components/players/vote-modal";
+import {
+  ArrowLeft,
+  Vote,
+  Trophy,
+  Users,
   Calendar,
   MapPin,
   Star,
   TrendingUp,
-  Share2
-} from 'lucide-react';
-import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { mockPlayers, mockCompetitions, mockPlayerVotesHistory } from '@/lib/mock-data';
+  Share2,
+} from "lucide-react";
+import Link from "next/link";
+import { motion } from "framer-motion";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
+import {
+  mockPlayers,
+  mockCompetitions,
+  mockPlayerVotesHistory,
+} from "@/lib/mock-data";
 
 export default function PlayerDetailPage() {
   const params = useParams();
   const competitionSlug = params.slug as string;
   const playerSlug = params.playerSlug as string;
-  
+
   const [player, setPlayer] = useState<any>(null);
   const [competition, setCompetition] = useState<any>(null);
   const [voteModalOpen, setVoteModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simuler le chargement avec les données mock
-    setTimeout(() => {
-      const foundCompetition = mockCompetitions.find(c => c.slug === competitionSlug);
-      const foundPlayer = mockPlayers.find(p => p.slug === playerSlug);
-      
-      setCompetition(foundCompetition);
-      setPlayer(foundPlayer);
-      setLoading(false);
-    }, 800);
+    async function fetchData() {
+      try {
+        // Appel API pour la compétition
+        const compRes = await fetch(`/api/competitions/${competitionSlug}`);
+        if (!compRes.ok) throw new Error("Erreur récupération compétition");
+        const compData = await compRes.json();
+
+        // Appel API pour le joueur
+        const playerRes = await fetch(
+          `/api/competitions/${competitionSlug}/players/${playerSlug}`
+        );
+        if (!playerRes.ok) throw new Error("Erreur récupération joueur");
+        const playerData = await playerRes.json();
+
+        setCompetition(compData);
+        setPlayer(playerData);
+      } catch (err) {
+        console.error("Erreur fetch:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchData();
   }, [competitionSlug, playerSlug]);
 
   if (loading) {
@@ -73,7 +106,9 @@ export default function PlayerDetailPage() {
     return (
       <div className="bg-gradient-to-br from-indigo-50 via-white to-blue-50 py-8 md:py-16">
         <div className="container mx-auto px-4 text-center">
-          <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">Joueur non trouvé</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">
+            Joueur non trouvé
+          </h1>
           <Button asChild>
             <Link href="/competitions">
               <ArrowLeft className="w-4 h-4 mr-2" />
@@ -86,15 +121,19 @@ export default function PlayerDetailPage() {
   }
 
   const totalVotes = mockPlayers
-    .filter(p => p.competitionId === competition._id)
+    .filter((p) => p.competitionId === competition._id)
     .reduce((acc, p) => acc + p.votesConfirmed, 0);
-  
-  const playerRank = mockPlayers
-    .filter(p => p.competitionId === competition._id)
-    .sort((a, b) => b.votesConfirmed - a.votesConfirmed)
-    .findIndex(p => p._id === player._id) + 1;
 
-  const marketShare = totalVotes > 0 ? ((player.votesConfirmed / totalVotes) * 100).toFixed(1) : '0';
+  const playerRank =
+    mockPlayers
+      .filter((p) => p.competitionId === competition._id)
+      .sort((a, b) => b.votesConfirmed - a.votesConfirmed)
+      .findIndex((p) => p._id === player._id) + 1;
+
+  const marketShare =
+    totalVotes > 0
+      ? ((player.votesConfirmed / totalVotes) * 100).toFixed(1)
+      : "0";
 
   return (
     <>
@@ -127,7 +166,7 @@ export default function PlayerDetailPage() {
                   <div className="relative">
                     {/* Background */}
                     <div className="h-32 md:h-48 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600" />
-                    
+
                     {/* Content */}
                     <div className="relative -mt-16 md:-mt-24 p-4 md:p-8">
                       <div className="flex flex-col md:flex-row items-start md:items-end space-y-4 md:space-y-0 md:space-x-6">
@@ -156,7 +195,7 @@ export default function PlayerDetailPage() {
                               #{playerRank}
                             </Badge>
                           </div>
-                          
+
                           <div className="flex flex-wrap justify-center md:justify-start items-center gap-2 md:gap-4 text-gray-600 mb-4">
                             <div className="flex items-center space-x-1">
                               <Calendar className="w-4 h-4" />
@@ -172,7 +211,9 @@ export default function PlayerDetailPage() {
                             </div>
                           </div>
 
-                          <p className="text-gray-700 leading-relaxed text-sm md:text-base">{player.bio}</p>
+                          <p className="text-gray-700 leading-relaxed text-sm md:text-base">
+                            {player.bio}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -193,7 +234,9 @@ export default function PlayerDetailPage() {
                     <div className="text-2xl md:text-3xl font-bold text-indigo-600 mb-1">
                       {player.votesConfirmed}
                     </div>
-                    <div className="text-xs md:text-sm text-gray-600">Votes confirmés</div>
+                    <div className="text-xs md:text-sm text-gray-600">
+                      Votes confirmés
+                    </div>
                   </CardContent>
                 </Card>
 
@@ -203,7 +246,9 @@ export default function PlayerDetailPage() {
                     <div className="text-2xl md:text-3xl font-bold text-yellow-600 mb-1">
                       #{playerRank}
                     </div>
-                    <div className="text-xs md:text-sm text-gray-600">Position</div>
+                    <div className="text-xs md:text-sm text-gray-600">
+                      Position
+                    </div>
                   </CardContent>
                 </Card>
 
@@ -213,7 +258,9 @@ export default function PlayerDetailPage() {
                     <div className="text-2xl md:text-3xl font-bold text-emerald-600 mb-1">
                       {marketShare}%
                     </div>
-                    <div className="text-xs md:text-sm text-gray-600">Part de marché</div>
+                    <div className="text-xs md:text-sm text-gray-600">
+                      Part de marché
+                    </div>
                   </CardContent>
                 </Card>
 
@@ -221,9 +268,11 @@ export default function PlayerDetailPage() {
                   <CardContent className="p-4 md:p-6">
                     <Star className="w-6 md:w-8 h-6 md:h-8 text-purple-600 mx-auto mb-3" />
                     <div className="text-2xl md:text-3xl font-bold text-purple-600 mb-1">
-                      {(player.votesConfirmed * 200 / 1000).toFixed(0)}K
+                      {((player.votesConfirmed * 200) / 1000).toFixed(0)}K
                     </div>
-                    <div className="text-xs md:text-sm text-gray-600">FCFA générés</div>
+                    <div className="text-xs md:text-sm text-gray-600">
+                      FCFA générés
+                    </div>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -240,7 +289,9 @@ export default function PlayerDetailPage() {
                       <TrendingUp className="w-5 h-5 mr-2" />
                       Évolution des votes
                     </CardTitle>
-                    <CardDescription>Votes reçus au cours des 7 derniers jours</CardDescription>
+                    <CardDescription>
+                      Votes reçus au cours des 7 derniers jours
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <ResponsiveContainer width="100%" height={250}>
@@ -248,21 +299,25 @@ export default function PlayerDetailPage() {
                         <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                         <XAxis dataKey="date" stroke="#666" fontSize={12} />
                         <YAxis stroke="#666" fontSize={12} />
-                        <Tooltip 
-                          contentStyle={{ 
-                            backgroundColor: 'white', 
-                            border: 'none', 
-                            borderRadius: '12px', 
-                            boxShadow: '0 10px 25px rgba(0,0,0,0.1)' 
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: "white",
+                            border: "none",
+                            borderRadius: "12px",
+                            boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
                           }}
                         />
-                        <Line 
-                          type="monotone" 
-                          dataKey="votes" 
-                          stroke="#6366f1" 
+                        <Line
+                          type="monotone"
+                          dataKey="votes"
+                          stroke="#6366f1"
                           strokeWidth={3}
-                          dot={{ fill: '#6366f1', strokeWidth: 2, r: 4 }}
-                          activeDot={{ r: 6, stroke: '#6366f1', strokeWidth: 2 }}
+                          dot={{ fill: "#6366f1", strokeWidth: 2, r: 4 }}
+                          activeDot={{
+                            r: 6,
+                            stroke: "#6366f1",
+                            strokeWidth: 2,
+                          }}
                         />
                       </LineChart>
                     </ResponsiveContainer>
@@ -282,12 +337,16 @@ export default function PlayerDetailPage() {
                 <Card className="rounded-2xl shadow-lg border-0 bg-gradient-to-br from-indigo-600 to-purple-600 text-white">
                   <CardContent className="p-4 md:p-6 text-center">
                     <Vote className="w-10 md:w-12 h-10 md:h-12 text-white mx-auto mb-4" />
-                    <h3 className="text-lg md:text-xl font-bold mb-2">Votez maintenant</h3>
+                    <h3 className="text-lg md:text-xl font-bold mb-2">
+                      Votez maintenant
+                    </h3>
                     <p className="text-indigo-100 mb-6 text-sm">
                       Soutenez {player.firstName} avec votre vote
                     </p>
                     <div className="bg-white/20 rounded-xl p-4 mb-6">
-                      <div className="text-xl md:text-2xl font-bold">{competition.votePrice} FCFA</div>
+                      <div className="text-xl md:text-2xl font-bold">
+                        {competition.votePrice} FCFA
+                      </div>
                       <div className="text-sm text-indigo-100">par vote</div>
                     </div>
                     <Button
@@ -315,40 +374,65 @@ export default function PlayerDetailPage() {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div>
-                      <h4 className="font-bold text-gray-900 mb-1">{competition.name}</h4>
-                      <p className="text-sm text-gray-600">{competition.description}</p>
+                      <h4 className="font-bold text-gray-900 mb-1">
+                        {competition.name}
+                      </h4>
+                      <p className="text-sm text-gray-600">
+                        {competition.description}
+                      </p>
                     </div>
-                    
+
                     <div className="space-y-3">
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-600">Statut :</span>
-                        <Badge className={
-                          competition.status === 'active' ? 'bg-green-500 text-white' :
-                          competition.status === 'ended' ? 'bg-gray-500 text-white' :
-                          'bg-orange-500 text-white'
-                        }>
-                          {competition.status === 'active' ? 'En cours' :
-                           competition.status === 'ended' ? 'Terminée' : 'Brouillon'}
+                        <Badge
+                          className={
+                            competition.status === "active"
+                              ? "bg-green-500 text-white"
+                              : competition.status === "ended"
+                              ? "bg-gray-500 text-white"
+                              : "bg-orange-500 text-white"
+                          }
+                        >
+                          {competition.status === "active"
+                            ? "En cours"
+                            : competition.status === "ended"
+                            ? "Terminée"
+                            : "Brouillon"}
                         </Badge>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-600">Joueurs :</span>
-                        <span className="font-medium">{competition.playersCount}</span>
+                        <span className="font-medium">
+                          {competition.playersCount}
+                        </span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-600">Total votes :</span>
-                        <span className="font-medium">{competition.totalVotes}</span>
+                        <span className="font-medium">
+                          {competition.totalVotes}
+                        </span>
                       </div>
                     </div>
 
                     <div className="pt-4 space-y-2">
-                      <Button asChild variant="outline" className="w-full rounded-xl">
+                      <Button
+                        asChild
+                        variant="outline"
+                        className="w-full rounded-xl"
+                      >
                         <Link href={`/competitions/${competitionSlug}/vote`}>
                           Voir tous les joueurs
                         </Link>
                       </Button>
-                      <Button asChild variant="outline" className="w-full rounded-xl">
-                        <Link href={`/competitions/${competitionSlug}/classement`}>
+                      <Button
+                        asChild
+                        variant="outline"
+                        className="w-full rounded-xl"
+                      >
+                        <Link
+                          href={`/competitions/${competitionSlug}/classement`}
+                        >
                           Voir le classement
                         </Link>
                       </Button>
@@ -374,12 +458,12 @@ export default function PlayerDetailPage() {
                     <p className="text-sm text-gray-600 mb-4">
                       Partagez le profil de {player.firstName} avec vos amis
                     </p>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       className="w-full rounded-xl"
                       onClick={() => {
                         navigator.clipboard.writeText(window.location.href);
-                        alert('Lien copié !');
+                        alert("Lien copié !");
                       }}
                     >
                       <Share2 className="w-4 h-4 mr-2" />
