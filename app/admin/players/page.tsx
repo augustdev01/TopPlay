@@ -53,21 +53,7 @@ export default function AdminPlayersPage() {
         const playersRes = await fetch("/api/admin/players"); // à créer côté API
         const playersData = await playersRes.json();
 
-        // Enrichir les joueurs avec infos de compétition
-        const enrichedPlayers = playersData.map((player: any) => {
-          const competition = competitions.find(
-            (c: any) => c.id === player.competitionId
-          );
-          return {
-            ...player,
-            competition: competition?.name || "Compétition inconnue",
-            competitionSlug: competition?.slug || "",
-            competitionStatus: competition?.status || "draft",
-            revenue: player.votesConfirmed * (competition?.votePrice || 200),
-          };
-        });
-
-        setPlayers(enrichedPlayers);
+        setPlayers(playersData);
       } catch (error) {
         console.error("Erreur chargement joueurs:", error);
       } finally {
@@ -92,9 +78,30 @@ export default function AdminPlayersPage() {
     return matchesSearch && matchesCompetition && matchesTeam;
   });
 
-  const handleDelete = (playerId: string) => {
+  console.log(filteredPlayers);
+
+  const handleDelete = async (playerId: string) => {
     if (confirm("Êtes-vous sûr de vouloir supprimer ce joueur ?")) {
-      setPlayers((prev) => prev.filter((p) => p._id !== playerId));
+      try {
+        // Appel à l'API
+        const res = await fetch(`/api/admin/players?id=${playerId}`, {
+          method: "DELETE",
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.error || "Erreur lors de la suppression");
+        }
+        // Optionnel : suppression locale immédiate pour UX
+        setPlayers((prev) => prev.filter((p) => p._id !== playerId));
+        alert("Joueur supprimé avec succès");
+      } catch (error: any) {
+        console.error("Erreur suppression:", error);
+        alert(error.message || "Erreur lors de la suppression du joueur");
+        // Optionnel : recharger la liste si l'utilisateur souhaite annuler la suppression locale
+        // fetchPlayers();
+      }
     }
   };
 
@@ -266,7 +273,7 @@ export default function AdminPlayersPage() {
                         {player.team && <span>•</span>}
                         <span>{player.position || "Position non définie"}</span>
                         <span>•</span>
-                        <span>{player.competition}</span>
+                        <span>{player.competitionName}</span>
                       </div>
 
                       <div className="grid grid-cols-3 gap-4">

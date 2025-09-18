@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 // import { Badge } from "@/components/ui/badge";
-import { Trophy, Crown, Medal, Award, Vote } from "lucide-react";
+import { Trophy, Crown, Medal, Award, Vote, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 
@@ -40,11 +40,11 @@ export function LeaderboardTable({
   const getRankIcon = (rank: number) => {
     switch (rank) {
       case 1:
-        return <Crown className="w-6 h-6 text-yellow-500" />;
+        return <Crown className="w-4 h-4 sm:w-6 sm:h-6 text-yellow-500" />;
       case 2:
-        return <Medal className="w-6 h-6 text-gray-400" />;
+        return <Medal className="w-4 h-4 sm:w-6 sm:h-6 text-gray-400" />;
       case 3:
-        return <Award className="w-6 h-6 text-amber-600" />;
+        return <Award className="w-4 h-4 sm:w-6 sm:h-6 text-amber-600" />;
       default:
         return null;
     }
@@ -171,17 +171,16 @@ export function LeaderboardTable({
                       asChild
                       size="sm"
                       variant="outline"
-                      className="rounded-xl  hover:bg-indigo-50 hover:border-indigo-300 hover:text-indigo-700 transition-all duration-200 shadow-sm min-w-[80px] sm:min-w-[70px]"
+                      className="rounded-xl   hover:bg-indigo-50 hover:border-indigo-300 hover:text-indigo-700 transition-all duration-200 shadow-sm sm:min-w-[70px]"
                     >
                       <Link
                         href={`/competitions/${competitionSlug}/players/${player.slug}`}
-                        className="text-sm font-medium"
                       >
-                        Voir
+                        <ArrowRight className=" w-4 font-medium" />
                       </Link>
                     </Button>
                     <div
-                      className={`mb-3 w-full h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold ${getRankBadge(
+                      className={`mb-3 w-8 h-8  sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-[1px] sm:text-sm font-bold ${getRankBadge(
                         rank
                       )}`}
                     >
@@ -191,11 +190,11 @@ export function LeaderboardTable({
 
                   <div className="p-4 sm:p-6">
                     {/* Section principale - responsive layout */}
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center">
                       {/* Photo et info joueur */}
-                      <div className="flex items-center gap-4 flex-1">
+                      <div className="flex flex-col items-center sm:items-start ">
                         {/* Photo du joueur */}
-                        <div className="w-16 h-16 sm:w-14 sm:h-14 bg-indigo-100 rounded-full overflow-hidden flex-shrink-0 shadow-md">
+                        <div className="w-16 h-16 sm:w-20 sm:h-20 bg-indigo-100 rounded-full overflow-hidden flex-shrink-0 shadow-md">
                           {player.photoUrl ? (
                             <img
                               src={player.photoUrl}
@@ -210,12 +209,12 @@ export function LeaderboardTable({
                         </div>
 
                         {/* Info joueur */}
-                        <div className="flex-1 min-w-0 pr-12 sm:pr-0">
-                          <h3 className="font-bold text-lg sm:text-base text-gray-900 truncate">
+                        <div className="  w-full m-[0_auto]">
+                          <h3 className="font-bold text-center sm:text-start text-lg sm:text-base text-gray-900 truncate w-full">
                             {player.firstName} {player.lastName}
                           </h3>
                           {(player.team || player.position) && (
-                            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mt-1">
+                            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-1 sm:gap-2 mt-1 text-center sm:text-start">
                               {player.team && (
                                 <span className="text-sm font-medium text-indigo-600">
                                   {player.team}
@@ -248,7 +247,7 @@ export function LeaderboardTable({
                     </div>
 
                     <div className="flex flex-col gap-4 mt-4 pt-4">
-                      <div className="flex items-center gap-2 mr-0 ">
+                      <div className="flex items-center gap-2 mr-0 justify-center sm:justify-end ">
                         <Vote className="w-5 h-5 text-emerald-600" />
                         <span className="text-xl sm:text-xl font-bold text-emerald-600">
                           {player.percentage.toFixed(1)}%

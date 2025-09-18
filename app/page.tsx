@@ -89,6 +89,7 @@ export default function HomePage() {
     }
     return amount.toString();
   };
+
   return (
     <div className="bg-gradient-to-br from-indigo-50 via-white to-blue-50 sm:py-5 lg:py-20">
       {/* Hero Section */}

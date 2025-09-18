@@ -42,7 +42,7 @@ model Player {
   team           String?
   position       String?
   bio            String?
-  photoUrl       String?
+  photo          Bytes?
   votesConfirmed Int    @default(0)
   votesPending   Int    @default(0)
   createdAt      DateTime @default(now())

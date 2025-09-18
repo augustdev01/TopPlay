@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   Card,
@@ -42,6 +42,9 @@ export default function CreatePlayerPage() {
     competitionId: "",
   });
 
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [uploading, setUploading] = useState(false);
+
   useEffect(() => {
     const fetchCompetitions = async () => {
       try {
@@ -64,10 +67,19 @@ export default function CreatePlayerPage() {
     setLoading(true);
 
     try {
+      const fd = new FormData();
+      Object.entries(formData).forEach(([key, value]) => {
+        if (value !== undefined && value !== null)
+          fd.append(key, String(value));
+      });
+
+      // Ajouter le fichier si présent
+      const file = fileInputRef.current?.files?.[0];
+      if (file) fd.append("photo", file);
+
       const response = await fetch("/api/admin/players", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: fd, // FormData auto gère le Content-Type
       });
 
       if (!response.ok) {
@@ -98,6 +110,17 @@ export default function CreatePlayerPage() {
     const newData = { ...formData, [field]: value };
     newData.slug = generateSlug(newData.firstName, newData.lastName);
     setFormData(newData);
+  };
+
+  const handleFilePreview = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setFormData((prev) => ({ ...prev, photoUrl: reader.result as string }));
+    };
+    reader.readAsDataURL(file);
   };
 
   const positions = [
@@ -293,14 +316,45 @@ export default function CreatePlayerPage() {
                     className="rounded-xl flex-1"
                     placeholder="https://images.pexels.com/..."
                   />
-                  <Button
+                  {/*   <Button
                     type="button"
                     variant="outline"
                     className="rounded-xl"
                   >
                     <Upload className="w-4 h-4 mr-2" />
                     Upload
-                  </Button>
+                  </Button> */}
+                  <>
+                    {/* hidden file input */}
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleFilePreview}
+                    />
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="rounded-xl"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploading}
+                    >
+                      {uploading ? (
+                        <>
+                          {/* petit indicateur texte, tu peux remplacer par un spinner si tu veux */}
+                          <Upload className="w-4 h-4 mr-2 animate-spin" />
+                          Uploading...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="w-4 h-4 mr-2" />
+                          Upload
+                        </>
+                      )}
+                    </Button>
+                  </>
                 </div>
                 {formData.photoUrl && (
                   <div className="mt-3">

@@ -34,11 +34,8 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import {
-  mockPlayers,
-  mockCompetitions,
-  mockPlayerVotesHistory,
-} from "@/lib/mock-data";
+import { mockPlayerVotesHistory } from "@/lib/mock-data";
+import { ConfirmPaymentModal } from "@/components/players/confirmPayment-modal";
 
 export default function PlayerDetailPage() {
   const params = useParams();
@@ -49,31 +46,52 @@ export default function PlayerDetailPage() {
   const [competition, setCompetition] = useState<any>(null);
   const [voteModalOpen, setVoteModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [players, setPlayers] = useState<any[]>([]);
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [orderData, setOrderData] = useState<{
+    orderId: string;
+    state: string;
+    customerPhone: string;
+  } | null>(null);
+
+  const fetchData = async () => {
+    try {
+      const [compRes, playersRes, playerRes] = await Promise.all([
+        fetch(`/api/competitions/${competitionSlug}`),
+        fetch(`/api/competitions/${competitionSlug}/players`),
+        fetch(`/api/competitions/${competitionSlug}/players/${playerSlug}`),
+      ]);
+
+      if (!compRes.ok || !playersRes.ok || !playerRes.ok) {
+        throw new Error("Erreur lors du chargement des données");
+      }
+
+      const [compData, playersData, playerData] = await Promise.all([
+        compRes.json(),
+        playersRes.json(),
+        playerRes.json(),
+      ]);
+
+      setCompetition(compData);
+      setPlayers(playersData);
+      setPlayer(playerData);
+    } catch (err) {
+      console.error("Erreur fetch:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Lors de l'ouverture du modal de confirmation
+  useEffect(() => {
+    const savedOrder = localStorage.getItem("currentOrder");
+    if (savedOrder) {
+      setOrderData(JSON.parse(savedOrder));
+      setConfirmModalOpen(true);
+    }
+  }, []);
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        // Appel API pour la compétition
-        const compRes = await fetch(`/api/competitions/${competitionSlug}`);
-        if (!compRes.ok) throw new Error("Erreur récupération compétition");
-        const compData = await compRes.json();
-
-        // Appel API pour le joueur
-        const playerRes = await fetch(
-          `/api/competitions/${competitionSlug}/players/${playerSlug}`
-        );
-        if (!playerRes.ok) throw new Error("Erreur récupération joueur");
-        const playerData = await playerRes.json();
-
-        setCompetition(compData);
-        setPlayer(playerData);
-      } catch (err) {
-        console.error("Erreur fetch:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-
     fetchData();
   }, [competitionSlug, playerSlug]);
 
@@ -119,16 +137,13 @@ export default function PlayerDetailPage() {
       </div>
     );
   }
+  const totalVotes = players.reduce((acc, p) => acc + p.votesConfirmed, 0);
 
-  const totalVotes = mockPlayers
-    .filter((p) => p.competitionId === competition._id)
-    .reduce((acc, p) => acc + p.votesConfirmed, 0);
+  const sortedPlayers = [...players].sort(
+    (a, b) => b.votesConfirmed - a.votesConfirmed
+  );
 
-  const playerRank =
-    mockPlayers
-      .filter((p) => p.competitionId === competition._id)
-      .sort((a, b) => b.votesConfirmed - a.votesConfirmed)
-      .findIndex((p) => p._id === player._id) + 1;
+  const playerRank = sortedPlayers.findIndex((p) => p._id === player._id) + 1;
 
   const marketShare =
     totalVotes > 0
@@ -171,7 +186,7 @@ export default function PlayerDetailPage() {
                     <div className="relative -mt-16 md:-mt-24 p-4 md:p-8">
                       <div className="flex flex-col md:flex-row items-start md:items-end space-y-4 md:space-y-0 md:space-x-6">
                         {/* Photo */}
-                        <div className="w-24 h-24 md:w-32 md:h-32 bg-white rounded-2xl shadow-xl overflow-hidden border-4 border-white mx-auto md:mx-0">
+                        <div className="w-32 h-32 md:w-32 md:h-32 bg-white rounded-2xl shadow-xl overflow-hidden border-4 border-white mx-auto md:mx-0">
                           {player.photoUrl ? (
                             <img
                               src={player.photoUrl}
@@ -482,11 +497,25 @@ export default function PlayerDetailPage() {
         onOpenChange={setVoteModalOpen}
         player={player}
         competition={competition}
-        onSuccess={() => {
-          setVoteModalOpen(false);
-          // Refresh data
+        onSuccess={(data) => {
+          setOrderData(data); // stocke orderId + state + customerPhone
+          setVoteModalOpen(false); // ferme modal paiement
+          setConfirmModalOpen(true); // ouvre modal confirmation
         }}
       />
+
+      {orderData && (
+        <ConfirmPaymentModal
+          open={confirmModalOpen}
+          onOpenChange={setConfirmModalOpen}
+          orderData={orderData}
+          onSuccess={() => {
+            setOrderData(null);
+            localStorage.removeItem("currentOrder");
+            fetchData?.();
+          }}
+        />
+      )}
     </>
   );
 }

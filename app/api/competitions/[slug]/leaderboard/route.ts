@@ -30,7 +30,7 @@ export async function GET(
         lastName: true,
         team: true,
         position: true,
-        photoUrl: true,
+        photo: true,
         votesConfirmed: true,
       },
     });
@@ -43,8 +43,14 @@ export async function GET(
       const percentage =
         totalVotes > 0 ? (p.votesConfirmed / totalVotes) * 100 : 0;
 
+      // Transformer photo binaire en Base64 si c’est un Buffer
+      const photoUrl = p.photo
+        ? `data:image/jpeg;base64,${Buffer.from(p.photo).toString("base64")}`
+        : null;
+
       return {
         ...p,
+        photoUrl: photoUrl,
         rank: index + 1, // classement direct
         percentage: parseFloat(percentage.toFixed(2)), // 2 décimales
       };
@@ -52,7 +58,13 @@ export async function GET(
 
     // Générer ETag basé sur l'état du leaderboard
     const dataString = JSON.stringify(
-      leaderboard.map((p: any) => ({ id: p.id, votes: p.votesConfirmed }))
+      leaderboard.map((p: any) => ({
+        id: p.id,
+        votes: p.votesConfirmed,
+        photoUrl: p.photo
+          ? `data:image/jpeg;base64,${Buffer.from(p.photo).toString("base64")}`
+          : null,
+      }))
     );
     const etag = Buffer.from(dataString).toString("base64");
 

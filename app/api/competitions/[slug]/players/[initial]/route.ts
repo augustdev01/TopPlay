@@ -1,5 +1,6 @@
 // app/api/competitions/[slug]/players/[playerSlug]/route.ts
 import { prisma } from "@/lib/db";
+import { mapPlayer } from "@/lib/mappers/mappers";
 import { NextResponse } from "next/server";
 
 export async function GET(
@@ -9,68 +10,61 @@ export async function GET(
   try {
     const { slug, playerSlug } = params;
 
-    // 1) Vérifier la compétition
+    // 1) Vérifier la compétition avec les joueurs
     const competition = await prisma.competition.findUnique({
       where: { slug },
-      select: { id: true, name: true, slug: true },
+      include: {
+        players: {
+          where: { slug: playerSlug },
+          select: {
+            id: true,
+            slug: true,
+            firstName: true,
+            lastName: true,
+            age: true,
+            team: true,
+            position: true,
+            bio: true,
+            photo: true,
+            votesConfirmed: true,
+            votesPending: true,
+            createdAt: true,
+            updatedAt: true,
+            competitionId: true,
+          },
+        },
+      },
     });
 
-    if (!competition) {
+    if (!competition || competition.players.length === 0) {
       return NextResponse.json(
-        { error: "Compétition non trouvée" },
+        { error: "Joueur ou compétition introuvable" },
         { status: 404 }
       );
     }
 
-    // 2) Récupérer le joueur pour cette compétition
-    const player = await prisma.player.findFirst({
-      where: {
-        slug: playerSlug,
-        competitionId: competition.id,
-      },
-      select: {
-        id: true,
-        slug: true,
-        firstName: true,
-        lastName: true,
-        team: true,
-        position: true,
-        photoUrl: true,
-        votesConfirmed: true,
-        createdAt: true,
-        updatedAt: true,
+    // 2) Mapper le joueur pour générer photoUrl
+    const player = mapPlayer({
+      ...competition.players[0],
+      competition: {
+        name: competition.name,
+        slug: competition.slug,
+        status: competition.status, // ou la valeur réelle si tu l'as
+        votePrice: competition.votePrice, // si nécessaire, ou récupère depuis la compétition
       },
     });
-
-    if (!player) {
-      return NextResponse.json(
-        { error: "Joueur introuvable" },
-        { status: 404 }
-      );
-    }
 
     // 3) Calculer le total des votes de la compétition
-    const agg = await prisma.player.aggregate({
-      where: { competitionId: competition.id },
-      _sum: { votesConfirmed: true },
-    });
-    const totalVotes = agg._sum.votesConfirmed ?? 0;
+    const totalVotes = competition.players.reduce(
+      (acc, p) => acc + p.votesConfirmed,
+      0
+    );
 
-    // 4) Calculer le pourcentage du joueur
     const percentage =
       totalVotes > 0 ? (player.votesConfirmed / totalVotes) * 100 : 0;
 
-    // 5) Construire la réponse (on ajoute _id string pour rester compatible si frontend attend _id)
     const responseBody = {
-      _id: String(player.id),
-      id: player.id,
-      slug: player.slug,
-      firstName: player.firstName,
-      lastName: player.lastName,
-      team: player.team,
-      position: player.position,
-      photoUrl: player.photoUrl,
-      votesConfirmed: player.votesConfirmed,
+      ...player,
       percentage: Number(percentage.toFixed(2)),
       competition: {
         id: competition.id,
@@ -82,9 +76,7 @@ export async function GET(
 
     return NextResponse.json(responseBody, {
       status: 200,
-      headers: {
-        "Cache-Control": "public, max-age=5", // ajuste si besoin
-      },
+      headers: { "Cache-Control": "public, max-age=5" },
     });
   } catch (error) {
     console.error("Erreur GET player:", error);

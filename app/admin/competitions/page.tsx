@@ -69,12 +69,12 @@ export default function AdminCompetitionsPage() {
       comp.slug.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleDelete = async (competitionId: string) => {
+  const handleDelete = async (competitionSlug: string) => {
     if (!confirm("Êtes-vous sûr de vouloir supprimer cette compétition ?"))
       return;
 
     try {
-      const res = await fetch(`/api/competitions/${competitionId}`, {
+      const res = await fetch(`/api/competitions/${competitionSlug}`, {
         method: "DELETE",
       });
 
@@ -82,7 +82,7 @@ export default function AdminCompetitionsPage() {
         throw new Error("Erreur lors de la suppression");
       }
 
-      setCompetitions((prev) => prev.filter((c) => c._id !== competitionId));
+      setCompetitions((prev) => prev.filter((c) => c.slug !== competitionSlug));
     } catch (error) {
       console.error(error);
       alert("La suppression a échoué.");
@@ -133,6 +133,16 @@ export default function AdminCompetitionsPage() {
         </div>
       </div>
     );
+  }
+
+  function formatRevenue(revenue: number): string {
+    if (revenue >= 1_000_000) {
+      return `${(revenue / 1_000_000).toFixed(1)}M FCFA`; // millions
+    }
+    if (revenue >= 1_000) {
+      return `${(revenue / 1_000).toFixed(1)}K FCFA`; // milliers
+    }
+    return `${revenue} FCFA`; // moins de 1000
   }
 
   return (
@@ -235,7 +245,7 @@ export default function AdminCompetitionsPage() {
                         <div className="flex items-center space-x-2">
                           <DollarSign className="w-4 h-4 text-gray-500" />
                           <span className="text-sm text-gray-600">
-                            {(competition.revenue / 1000).toFixed(0)}K FCFA
+                            {formatRevenue(competition.revenue)}
                           </span>
                         </div>
                         <div className="flex items-center space-x-2">
@@ -305,7 +315,7 @@ export default function AdminCompetitionsPage() {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => handleDelete(competition._id)}
+                        onClick={() => handleDelete(competition.slug)}
                         className="rounded-xl text-red-600 hover:text-red-700 border-red-200 hover:border-red-300"
                       >
                         <Trash2 className="w-4 h-4 mr-2" />
