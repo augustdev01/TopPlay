@@ -91,7 +91,7 @@ export function VoteModal({
       onOpenChange(false);
 
       onSuccess?.(data);
-      window.open(data.wavePaymentUrl, "_blank");
+      window.location.href = data.wavePaymentUrl;
     } catch (error) {
       console.error("Erreur vote:", error);
       alert("Erreur lors de la création du vote");

@@ -13,7 +13,7 @@ export async function POST(req: Request) {
     if (!admin) {
       return NextResponse.json(
         {
-          error: "Identifiants invalides Tournoi de nuit dotee KARIM OUATTARA",
+          error: "Identifiants invalides",
         },
         { status: 401 }
       );
