@@ -29,7 +29,7 @@ export default function AdminLoginPage() {
 
     try {
       const result = await signIn("credentials", {
-        redirect: false, // important pour gérer manuellement la redirection
+        redirect: true, // important pour gérer manuellement la redirection
         email,
         password,
       });
