@@ -16,6 +16,7 @@ import {
   BarChart3,
   Plus,
 } from "lucide-react";
+import { signOut } from "next-auth/react";
 // import { motion } from 'framer-motion';
 
 const navigation = [
@@ -44,11 +45,8 @@ export default function AdminLayout({
 
   const handleLogout = async () => {
     try {
-      await fetch("/api/admin/auth/logout", {
-        method: "POST",
-        credentials: "include",
-      });
-      router.push("/");
+      await signOut({ redirect: false }); // évite la redirection automatique
+      router.push("/"); // tu rediriges manuellement
     } catch (err) {
       console.error("Erreur déconnexion:", err);
     }
@@ -96,7 +94,7 @@ export default function AdminLayout({
         <div className="p-4 border-t border-gray-800 space-y-2">
           <Button
             asChild
-            className="w-full justify-start bg-indigo-600 hover:bg-indigo-700 rounded-xl"
+            className="w-full justify-start hover:scale-[1.05] transition-all bg-indigo-600 hover:bg-indigo-700 rounded-xl"
           >
             <Link href="/admin/competitions/create">
               <Plus className="w-4 h-4 mr-2" />
@@ -106,7 +104,7 @@ export default function AdminLayout({
           <Button
             asChild
             variant="outline"
-            className="w-full justify-start text-gray-300 border-gray-700 hover:bg-gray-800 rounded-xl"
+            className="w-full hover:scale-[1.05] justify-start bg-indigo-600/10 text-indigo-600 border-indigo-700 hover:bg-indigo-600 hover:text-white transition-all rounded-xl"
           >
             <Link href="/admin/players/create">
               <Plus className="w-4 h-4 mr-2" />

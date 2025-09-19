@@ -35,7 +35,7 @@ export const authConfig: NextAuthOptions = {
           // Compare le mot de passe hashé
           const isValid = await bcrypt.compare(
             credentials.password,
-            admin.passwordHash
+            admin.password
           );
           if (!isValid) {
             return null;

@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Trophy, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { motion } from "framer-motion";
+import { signIn } from "next-auth/react";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -27,15 +28,14 @@ export default function AdminLoginPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/admin/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-        credentials: "include",
+      const result = await signIn("credentials", {
+        redirect: false, // important pour gérer manuellement la redirection
+        email,
+        password,
       });
 
-      if (res.ok) {
-        router.push("/admin");
+      if (!result?.error) {
+        router.push("/admin"); // login OK
       } else {
         alert("Email ou mot de passe incorrect");
       }
@@ -43,7 +43,7 @@ export default function AdminLoginPage() {
       console.error("Erreur login:", err);
       alert("Erreur serveur");
     } finally {
-      setLoading(false); // ✅ toujours arrêter le spinner
+      setLoading(false);
     }
   };
 
