@@ -121,7 +121,7 @@ export function Footer() {
               </div>
               <div className="flex items-center space-x-3 text-sm text-gray-400">
                 <Mail className="w-4 h-4" />
-                <span>contactvotesport@gmail.com</span>
+                <span>fiftyfiftyservice49@gmail.com</span>
               </div>
               <div className="flex items-center space-x-3 text-sm text-gray-400">
                 <MapPin className="w-4 h-4" />
