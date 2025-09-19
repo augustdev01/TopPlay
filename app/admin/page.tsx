@@ -25,69 +25,6 @@ import {
 import { motion } from "framer-motion";
 import Link from "next/link";
 
-// Mock data pour la démo
-const mockStats = {
-  totalVotes: 12450,
-  totalRevenue: 2490000,
-  activeCompetitions: 4,
-  totalPlayers: 156,
-  pendingTransactions: 23,
-  todayVotes: 187,
-  weeklyGrowth: 15.3,
-  topCompetition: "Championnat de Démonstration",
-};
-
-const mockRecentTransactions = [
-  {
-    id: "1",
-    playerName: "Mamadou Diallo",
-    competition: "Championnat Demo",
-    amount: 200,
-    status: "confirmed",
-    time: "2 min",
-  },
-  {
-    id: "2",
-    playerName: "Omar Sall",
-    competition: "Coupe Jeunes",
-    amount: 200,
-    status: "pending",
-    time: "5 min",
-  },
-  {
-    id: "3",
-    playerName: "Aminata Sow",
-    competition: "Tournoi Féminin",
-    amount: 200,
-    status: "confirmed",
-    time: "8 min",
-  },
-];
-
-const mockTopPlayers = [
-  {
-    name: "Mamadou Diallo",
-    competition: "Championnat Demo",
-    votes: 245,
-    revenue: 49000,
-    growth: "+12%",
-  },
-  {
-    name: "Omar Sall",
-    competition: "Coupe Jeunes",
-    votes: 178,
-    revenue: 35600,
-    growth: "+8%",
-  },
-  {
-    name: "Aminata Sow",
-    competition: "Tournoi Féminin",
-    votes: 134,
-    revenue: 26800,
-    growth: "+15%",
-  },
-];
-
 export default function AdminDashboard() {
   const [stats, setStats] = useState<any>(null);
   const [recentTransactions, setRecentTransactions] = useState<any[]>([]);
@@ -99,7 +36,7 @@ export default function AdminDashboard() {
       try {
         const res = await fetch("/api/admin/dashboard");
         const data = await res.json();
-        console.log("data: ", data);
+        // console.log("data: ", data);
 
         setStats(data.stats);
         setRecentTransactions(data.recentTransactions);
@@ -219,7 +156,7 @@ export default function AdminDashboard() {
         />
         <StatCard
           title="Revenus totaux"
-          value={`${(stats.totalRevenue / 1000000).toFixed(1)}M FCFA`}
+          value={`${(stats?.totalRevenue || 0 / 1000000).toFixed(1)}M FCFA`}
           icon={DollarSign}
           color="bg-gradient-to-br from-emerald-500 to-teal-500"
           change="+12.8%"

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -37,6 +38,20 @@ export default function AdminLayout({
   const isActive = (href: string) => {
     if (href === "/admin") return pathname === "/admin";
     return pathname.startsWith(href);
+  };
+
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/admin/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+      router.push("/");
+    } catch (err) {
+      console.error("Erreur déconnexion:", err);
+    }
   };
 
   return (
@@ -103,6 +118,7 @@ export default function AdminLayout({
         {/* Footer */}
         <div className="p-4 border-t border-gray-800">
           <Button
+            onClick={handleLogout}
             variant="ghost"
             className="w-full justify-start text-gray-300 hover:text-white hover:bg-gray-800 rounded-xl"
           >

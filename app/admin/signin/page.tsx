@@ -15,35 +15,30 @@ import {
 import { Trophy, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { motion } from "framer-motion";
 
-export default function AdminLoginPage() {
-  const router = useRouter();
-  const [email, setEmail] = useState("admin@votesport.com");
-  const [password, setPassword] = useState("admin123");
+export default function SignIn() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    try {
-      const res = await fetch("/api/admin/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-        credentials: "include",
-      });
+    const res = await fetch("/api/admin/auth/signin", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
 
-      if (res.ok) {
-        router.push("/admin");
-      } else {
-        alert("Email ou mot de passe incorrect");
-      }
-    } catch (err) {
-      console.error("Erreur login:", err);
-      alert("Erreur serveur");
-    } finally {
-      setLoading(false); // ✅ toujours arrêter le spinner
+    if (res.ok) {
+      alert("✅ Admin créé ! Vous pouvez vous connecter.");
+      router.push("/admin/login");
+    } else {
+      const data = await res.json();
+      alert(data.error || "Erreur");
+      setLoading(false);
     }
   };
 
@@ -66,15 +61,15 @@ export default function AdminLoginPage() {
               <Trophy className="w-8 h-8 text-white" />
             </motion.div>
             <CardTitle className="text-2xl font-bold text-gray-900">
-              Administration VoteSport
+              Créer un compte Admin
             </CardTitle>
             <CardDescription>
-              Connectez-vous pour accéder au tableau de bord
+              Inscrivez-vous pour accéder au tableau de bord
             </CardDescription>
           </CardHeader>
 
           <CardContent>
-            <form onSubmit={handleLogin} className="space-y-6">
+            <form onSubmit={handleRegister} className="space-y-6">
               <div>
                 <Label
                   htmlFor="email"
@@ -146,13 +141,19 @@ export default function AdminLoginPage() {
                 ) : (
                   <Trophy className="w-5 h-5 mr-2" />
                 )}
-                {loading ? "Connexion..." : "Se connecter"}
+                {loading ? "Création..." : "Créer un compte"}
               </Button>
             </form>
 
             <div className="mt-6 text-center">
               <p className="text-xs text-gray-500">
-                Compte de démonstration : admin@votesport.com / admin123
+                Vous avez déjà un compte ?{" "}
+                <button
+                  onClick={() => router.push("/admin/login")}
+                  className="text-indigo-600 hover:underline"
+                >
+                  Se connecter
+                </button>
               </p>
             </div>
           </CardContent>

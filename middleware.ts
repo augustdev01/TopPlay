@@ -1,19 +1,29 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Protéger les routes admin (simulation)
-  if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
-    // En production, vérifier le token d'authentification
-    // Pour la démo, on laisse passer
-    return NextResponse.next();
+  // Vérifier si on est dans /admin (sauf login et register)
+  if (
+    pathname.startsWith("/admin") &&
+    !pathname.startsWith("/admin/login") &&
+    !pathname.startsWith("/admin/signin")
+  ) {
+    const token = request.cookies.get("admin_token")?.value;
+
+    if (!token) {
+      return NextResponse.redirect(new URL("/admin/login", request.url));
+    }
+
+    /* const payload = verifyToken(token);
+    if (!payload)
+      return NextResponse.redirect(new URL("/admin/login", request.url)); */
   }
 
-  // Rate limiting simulation pour les API publiques
-  if (pathname.startsWith('/api/') && !pathname.startsWith('/api/admin/')) {
-    // En production, implémenter un vrai rate limiting
+  // Exemple: protection API publique avec rate limiting (facultatif)
+  if (pathname.startsWith("/api/") && !pathname.startsWith("/api/admin/")) {
+    // Ici tu peux plug un vrai système de rate limiting (Redis, Upstash, etc.)
     return NextResponse.next();
   }
 
@@ -21,8 +31,6 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    '/admin/:path*',
-    '/api/:path*'
-  ]
+  runtime: "nodejs",
+  matcher: ["/admin/:path*", "/api/:path*"],
 };
