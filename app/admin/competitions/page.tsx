@@ -25,7 +25,6 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { mockCompetitions } from "@/lib/mock-data";
 import { CompetitionEntity } from "@/types/entities/entities";
 
 export default function AdminCompetitionsPage() {
@@ -48,7 +47,7 @@ export default function AdminCompetitionsPage() {
     };
 
     fetchCompetitions();
-  }, []);
+  }, [competitions]);
 
   const getStatusConfig = (status: string) => {
     switch (status) {
