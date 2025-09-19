@@ -32,6 +32,7 @@ export default function AdminLoginPage() {
         redirect: true, // important pour gérer manuellement la redirection
         email,
         password,
+        callbackUrl: "/admin",
       });
 
       if (!result?.error) {
