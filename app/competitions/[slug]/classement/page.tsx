@@ -36,7 +36,12 @@ interface LeaderboardEntry {
   percentage: number;
 }
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
+const fetcher = async (url: string) => {
+  console.log("Fetching:", url);
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("Erreur API " + res.status);
+  return res.json();
+};
 
 export default function LeaderboardPage() {
   const params = useParams();
@@ -45,25 +50,21 @@ export default function LeaderboardPage() {
   const [competition, setCompetition] = useState<Competition | null>(null);
 
   // Polling du classement toutes les 3 secondes
-  const {
-    data: data,
-    error,
-    mutate,
-    isLoading,
-  } = useSWR<{ competition: Competition; leaderboard: LeaderboardEntry[] }>(
-    `/api/competitions/${competitionSlug}/leaderboard`,
-    fetcher,
-    {
-      refreshInterval: 300000, // 3 secondes
-      dedupingInterval: 200000,
-      revalidateOnFocus: true,
-      revalidateOnReconnect: true,
-    }
-  );
+  const { data, error, mutate, isLoading } = useSWR<{
+    competition: Competition;
+    leaderboard: LeaderboardEntry[];
+  }>(`/api/competitions/${competitionSlug}/leaderboard`, fetcher, {
+    refreshInterval: 30000, // 3 secondes
+    dedupingInterval: 10000, // tolère 1s de dédoublon
+    revalidateOnFocus: false, // optionnel
+    revalidateOnReconnect: true,
+  });
 
   useEffect(() => {
     fetchCompetition();
   }, [competitionSlug]);
+
+  console.log(`data: ${data}, loadbord: ${data?.leaderboard}`);
 
   const fetchCompetition = async () => {
     try {

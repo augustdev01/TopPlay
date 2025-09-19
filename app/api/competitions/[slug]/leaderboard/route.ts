@@ -50,7 +50,7 @@ export async function GET(
 
       return {
         ...p,
-        photoUrl: photoUrl,
+        photoUrl: /* photoUrl */ null,
         rank: index + 1, // classement direct
         percentage: parseFloat(percentage.toFixed(2)), // 2 décimales
       };
@@ -61,9 +61,9 @@ export async function GET(
       leaderboard.map((p: any) => ({
         id: p.id,
         votes: p.votesConfirmed,
-        photoUrl: p.photo
+        photoUrl: /* p.photo
           ? `data:image/jpeg;base64,${Buffer.from(p.photo).toString("base64")}`
-          : null,
+          : */ null,
       }))
     );
     const etag = Buffer.from(dataString).toString("base64");
@@ -72,6 +72,8 @@ export async function GET(
     if (ifNoneMatch === etag) {
       return new NextResponse(null, { status: 304 });
     }
+    console.log("data:", JSON.stringify(competition, null, 2));
+    console.log("leaderboard:", JSON.stringify(leaderboard, null, 2));
 
     return NextResponse.json(
       {

@@ -97,7 +97,9 @@ export function LeaderboardTable({
       <Card className="rounded-2xl shadow-lg">
         <CardContent className="p-8 text-center">
           <Trophy className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-600">Erreur de chargement du classement</p>
+          <p className="text-gray-600">
+            Erreur de chargement du classement:{JSON.stringify(error)}
+          </p>
           <Button
             onClick={() => window.location.reload()}
             className="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white"
@@ -152,7 +154,7 @@ export function LeaderboardTable({
 
             return (
               <motion.div
-                key={player._id}
+                key={index}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3, delay: index * 0.05 }}
