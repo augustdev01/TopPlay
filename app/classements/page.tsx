@@ -36,66 +36,6 @@ interface Competition {
   };
 }
 
-// Mock data pour la démo
-const mockCompetitions: Competition[] = [
-  {
-    _id: "1",
-    slug: "championnat-demo",
-    name: "Championnat de Démonstration",
-    status: "active",
-    totalVotes: 1247,
-    topPlayer: {
-      firstName: "Mamadou",
-      lastName: "Diallo",
-      votes: 245,
-      photoUrl:
-        "https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg",
-    },
-  },
-  {
-    _id: "2",
-    slug: "coupe-jeunes",
-    name: "Coupe des Jeunes Talents",
-    status: "active",
-    totalVotes: 892,
-    topPlayer: {
-      firstName: "Aminata",
-      lastName: "Sow",
-      votes: 178,
-      photoUrl:
-        "https://images.pexels.com/photos/1308885/pexels-photo-1308885.jpeg",
-    },
-  },
-  {
-    _id: "3",
-    slug: "ligue-veterans",
-    name: "Ligue des Vétérans",
-    status: "ended",
-    totalVotes: 2156,
-    topPlayer: {
-      firstName: "Ousmane",
-      lastName: "Diouf",
-      votes: 412,
-      photoUrl:
-        "https://images.pexels.com/photos/1884574/pexels-photo-1884574.jpeg",
-    },
-  },
-  {
-    _id: "4",
-    slug: "tournoi-feminin",
-    name: "Tournoi Féminin National",
-    status: "active",
-    totalVotes: 756,
-    topPlayer: {
-      firstName: "Fatou",
-      lastName: "Ndiaye",
-      votes: 134,
-      photoUrl:
-        "https://images.pexels.com/photos/1040881/pexels-photo-1040881.jpeg",
-    },
-  },
-];
-
 export default function ClassementsPage() {
   const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [loading, setLoading] = useState(true);

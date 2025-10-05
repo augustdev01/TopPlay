@@ -36,7 +36,7 @@ export default function AdminTransactionsPage() {
   const [transactions, setTransactions] = useState<any[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [page, setPage] = useState(1);
-  const [pageSize] = useState(15);
+  const [pageSize] = useState(200);
   const [total, setTotal] = useState(0);
 
   useEffect(() => {
@@ -127,6 +127,87 @@ export default function AdminTransactionsPage() {
 
   return (
     <div className="space-y-6">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        {" "}
+        <div className="flex items-center justify-between">
+          {" "}
+          <div>
+            {" "}
+            <h1 className="text-3xl font-bold text-gray-900">
+              Transactions
+            </h1>{" "}
+            <p className="text-gray-600 mt-1">
+              {" "}
+              Suivi des paiements automatisés{" "}
+            </p>{" "}
+          </div>{" "}
+          <div className="flex space-x-3">
+            {" "}
+            <Button variant="outline" className="rounded-xl">
+              {" "}
+              <Download className="w-4 h-4 mr-2" /> Exporter{" "}
+            </Button>{" "}
+            <Button
+              variant="outline"
+              className="rounded-xl"
+              onClick={() => window.location.reload()}
+            >
+              {" "}
+              <RefreshCw className="w-4 h-4 mr-2" /> Actualiser{" "}
+            </Button>{" "}
+          </div>{" "}
+        </div>{" "}
+      </motion.div>{" "}
+      {/* Stats Cards */}{" "}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="grid md:grid-cols-4 gap-6"
+      >
+        {" "}
+        <Card className="rounded-2xl shadow-lg border-0">
+          {" "}
+          <CardContent className="p-6 text-center">
+            {" "}
+            <CheckCircle className="w-8 h-8 text-green-500 mx-auto mb-2" />{" "}
+            <div className="text-2xl font-bold text-green-600">
+              {" "}
+              {transactions.length}{" "}
+            </div>{" "}
+            <div className="text-sm text-gray-600">
+              Total transactions filtres
+            </div>{" "}
+          </CardContent>{" "}
+        </Card>{" "}
+        <Card className="rounded-2xl shadow-lg border-0">
+          {" "}
+          <CardContent className="p-6 text-center">
+            {" "}
+            <Clock className="w-8 h-8 text-orange-500 mx-auto mb-2" />{" "}
+            <div className="text-2xl font-bold text-orange-600">
+              {" "}
+              {transactions.filter((t) => t.status === "pending").length}{" "}
+            </div>{" "}
+            <div className="text-sm text-gray-600">En attente</div>{" "}
+          </CardContent>{" "}
+        </Card>{" "}
+        <Card className="rounded-2xl shadow-lg border-0">
+          {" "}
+          <CardContent className="p-6 text-center">
+            {" "}
+            <XCircle className="w-8 h-8 text-red-500 mx-auto mb-2" />{" "}
+            <div className="text-2xl font-bold text-red-600">
+              {" "}
+              {transactions.filter((t) => t.status === "rejected").length}{" "}
+            </div>{" "}
+            <div className="text-sm text-gray-600">Rejetées</div>{" "}
+          </CardContent>{" "}
+        </Card>{" "}
+      </motion.div>
       {/* Toolbar */}
       <div className="flex justify-between items-center">
         <div className="flex gap-2">
@@ -171,7 +252,6 @@ export default function AdminTransactionsPage() {
           </Button>
         )}
       </div>
-
       {/* Liste */}
       <div className="space-y-4">
         {filteredTransactions.length > 0 ? (
@@ -217,7 +297,6 @@ export default function AdminTransactionsPage() {
           </div>
         )}
       </div>
-
       {/* Pagination */}
       <div className="flex justify-end gap-2">
         <Button disabled={page === 1} onClick={() => setPage((p) => p - 1)}>
