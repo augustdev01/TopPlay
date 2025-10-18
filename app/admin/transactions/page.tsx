@@ -279,7 +279,13 @@ export default function AdminTransactionsPage() {
               </div>
 
               <div className="flex gap-2 items-center">
-                <div>{new Date(t.createdAt).toDateString()}</div>
+                <div>
+                  {new Date(t.createdAt).toLocaleDateString()}{" "}
+                  {new Date(t.createdAt).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </div>
                 <Badge className="p-2">{t.status}</Badge>
                 <Button
                   size="sm"

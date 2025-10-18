@@ -112,6 +112,7 @@ export function PlayerCard({
 
             <div className="flex space-x-2">
               <Button
+                disabled={true}
                 onClick={() => setVoteModalOpen(true)}
                 className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all"
               >
@@ -136,7 +137,7 @@ export function PlayerCard({
         </Card>
       </motion.div>
 
-      <VoteModal
+      {/*   <VoteModal
         open={voteModalOpen}
         onOpenChange={setVoteModalOpen}
         player={player}
@@ -159,7 +160,7 @@ export function PlayerCard({
             onVoteSuccess?.();
           }}
         />
-      )}
+      )} */}
     </>
   );
 }
